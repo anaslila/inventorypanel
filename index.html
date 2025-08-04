@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Panel v1.95</title>
+    <title>Inventory Panel v 1.95</title>
     
-    <!-- FAVICON -->
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzQyODVGNCIvPgo8cGF0aCBkPSJNMTAgMTBIMjJWMTJIMTBWMTBaTTEwIDE0SDIyVjE2SDEwVjE0Wk0xMCAxOEgyMlYyMEgxMFYxOFpNMTAgMjJIMThWMjRIMTBWMjJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
+    <!-- MICL FAVICON -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzAwNDA4MCIvPgo8dGV4dCB4PSI2IiB5PSIyMiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiPk08L3RleHQ+Cjx0ZXh0IHg9IjE2IiB5PSIyMiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiPkM8L3RleHQ+Cjx0ZXh0IHg9IjIyIiB5PSIyMiIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiPkw8L3RleHQ+Cjwvc3ZnPgo=">
     
     <style>
         * {
@@ -16,115 +16,116 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
             color: #333;
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* HEADER - Google/Apple inspired */
+        /* HEADER */
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 16px;
-            padding: 24px 32px;
-            margin-bottom: 32px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .micl-logo {
+            background: #004080;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 18px;
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
+            font-size: 24px;
+            color: #004080;
+            margin: 0;
         }
 
         .header p {
-            color: #5f6368;
-            font-size: 1.1rem;
-            font-weight: 400;
+            color: #666;
+            margin: 5px 0 0 0;
+            font-size: 14px;
         }
 
-        /* NAVIGATION - Microsoft Fluent inspired */
+        /* NAVIGATION */
         .nav {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 12px;
-            padding: 16px 24px;
-            margin-bottom: 32px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            background: white;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: flex;
-            gap: 16px;
+            gap: 15px;
             align-items: center;
             flex-wrap: wrap;
         }
 
-        /* DROPDOWN MENUS */
         .dropdown {
             position: relative;
-            display: inline-block;
         }
 
         .dropdown-btn {
-            background: linear-gradient(135deg, #4285F4, #1a73e8);
+            background: #004080;
             color: white;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 500;
+            font-size: 14px;
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
         }
 
         .dropdown-btn:hover {
-            background: linear-gradient(135deg, #1a73e8, #1557b0);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+            background: #003366;
         }
 
         .dropdown-content {
             display: none;
             position: absolute;
             background: white;
-            min-width: 220px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-            border-radius: 12px;
+            min-width: 180px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-radius: 4px;
             z-index: 1000;
-            border: 1px solid rgba(0, 0, 0, 0.06);
             top: 100%;
             left: 0;
-            margin-top: 8px;
-            overflow: hidden;
+            margin-top: 5px;
+            border: 1px solid #ddd;
         }
 
         .dropdown-content a {
-            color: #3c4043;
-            padding: 14px 20px;
+            color: #333;
+            padding: 12px 16px;
             text-decoration: none;
             display: block;
-            font-size: 0.9rem;
-            transition: background-color 0.2s ease;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 14px;
+            border-bottom: 1px solid #eee;
         }
 
         .dropdown-content a:hover {
             background-color: #f8f9fa;
-            color: #1a73e8;
         }
 
         .dropdown-content a:last-child {
@@ -133,214 +134,148 @@
 
         .dropdown:hover .dropdown-content {
             display: block;
-            animation: fadeIn 0.3s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .arrow {
-            transition: transform 0.3s ease;
-        }
-
-        .dropdown:hover .arrow {
-            transform: rotate(180deg);
-        }
-
-        /* SEARCH BAR - Apple inspired */
-        .search-container {
+        .search-box {
             flex: 1;
-            max-width: 400px;
-            position: relative;
+            max-width: 300px;
         }
 
-        .search-input {
+        .search-box input {
             width: 100%;
-            padding: 12px 20px 12px 48px;
-            border: 2px solid rgba(0, 0, 0, 0.06);
-            border-radius: 24px;
-            font-size: 0.95rem;
-            background: white;
-            transition: all 0.3s ease;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
         }
 
-        .search-input:focus {
+        .search-box input:focus {
             outline: none;
-            border-color: #4285F4;
-            box-shadow: 0 0 0 4px rgba(66, 133, 244, 0.1);
+            border-color: #004080;
         }
 
-        .search-icon {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9aa0a6;
-        }
-
-        /* INVENTORY GRID - Material Design inspired */
+        /* INVENTORY GRID */
         .inventory-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 24px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
         .flat-card {
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .flat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #004080;
         }
 
         .flat-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
         }
 
         .flat-number {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1a73e8;
+            font-size: 18px;
+            font-weight: bold;
+            color: #004080;
         }
 
-        .status-badge {
-            padding: 6px 12px;
+        .status {
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .status-available {
-            background: #e8f5e8;
-            color: #137333;
-        }
-
-        .status-sold {
-            background: #fce8e6;
-            color: #d93025;
-        }
-
-        .status-reserved {
-            background: #fef7e0;
-            color: #f9ab00;
-        }
+        .status.available { background: #d4edda; color: #155724; }
+        .status.sold { background: #f8d7da; color: #721c24; }
+        .status.reserved { background: #fff3cd; color: #856404; }
 
         .flat-details {
-            margin-bottom: 20px;
+            font-size: 14px;
         }
 
         .detail-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-        }
-
-        .detail-row:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
+            margin-bottom: 8px;
         }
 
         .detail-label {
-            color: #5f6368;
+            color: #666;
             font-weight: 500;
         }
 
         .detail-value {
-            color: #202124;
-            font-weight: 600;
+            font-weight: bold;
         }
 
         .price {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #137333;
+            color: #28a745;
+            font-size: 16px;
         }
 
-        /* STATS SECTION */
-        .stats-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 16px;
-            padding: 32px;
-            margin-bottom: 32px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        /* STATS */
+        .stats {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 24px;
-        }
-
-        .stat-card {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
             text-align: center;
-            padding: 20px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #f8f9fa, #e8eaed);
         }
 
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
+        .stat-item h3 {
+            font-size: 28px;
+            margin-bottom: 5px;
         }
 
-        .stat-label {
-            color: #5f6368;
-            font-weight: 500;
+        .stat-item p {
+            color: #666;
+            font-size: 14px;
         }
 
-        .stat-available .stat-number { color: #137333; }
-        .stat-sold .stat-number { color: #d93025; }
-        .stat-reserved .stat-number { color: #f9ab00; }
-        .stat-total .stat-number { color: #1a73e8; }
+        .stat-total h3 { color: #004080; }
+        .stat-available h3 { color: #28a745; }
+        .stat-sold h3 { color: #dc3545; }
+        .stat-reserved h3 { color: #ffc107; }
 
         /* FOOTER */
         .footer {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 16px;
-            padding: 24px;
+            background: white;
+            padding: 20px;
             text-align: center;
-            color: #5f6368;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #666;
+            font-size: 14px;
         }
 
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             .nav {
                 flex-direction: column;
                 align-items: stretch;
             }
             
-            .search-container {
+            .search-box {
                 max-width: none;
-                margin-top: 16px;
+                margin-top: 15px;
             }
             
             .inventory-grid {
                 grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
             }
         }
     </style>
@@ -349,100 +284,88 @@
     <div class="container">
         <!-- HEADER -->
         <div class="header">
-            <h1>🏢 Inventory Panel v1.95</h1>
-            <p>Premium Carpet & Flat Management System</p>
+            <div class="logo">
+                <div class="micl-logo">MICL</div>
+                <div>
+                    <h1>Inventory Panel v 1.95</h1>
+                    <p>Created by Anas Lila</p>
+                </div>
+            </div>
         </div>
 
-        <!-- NAVIGATION WITH DROPDOWNS -->
+        <!-- NAVIGATION -->
         <div class="nav">
             <div class="dropdown">
                 <button class="dropdown-btn">
-                    📋 Properties
-                    <span class="arrow">▼</span>
+                    Properties ▼
                 </button>
                 <div class="dropdown-content">
-                    <a href="#available">Available Flats</a>
-                    <a href="#sold">Sold Properties</a>
-                    <a href="#reserved">Reserved Units</a>
-                    <a href="#all">All Properties</a>
+                    <a href="#" onclick="filterFlats('all')">All Properties</a>
+                    <a href="#" onclick="filterFlats('available')">Available</a>
+                    <a href="#" onclick="filterFlats('sold')">Sold</a>
+                    <a href="#" onclick="filterFlats('reserved')">Reserved</a>
                 </div>
             </div>
 
             <div class="dropdown">
                 <button class="dropdown-btn">
-                    🏠 Flat Types
-                    <span class="arrow">▼</span>
+                    Types ▼
                 </button>
                 <div class="dropdown-content">
-                    <a href="#1bhk">1 BHK</a>
-                    <a href="#2bhk">2 BHK</a>
-                    <a href="#3bhk">3 BHK</a>
-                    <a href="#4bhk">4 BHK</a>
-                    <a href="#penthouse">Penthouse</a>
+                    <a href="#" onclick="filterFlats('1bhk')">1 BHK</a>
+                    <a href="#" onclick="filterFlats('2bhk')">2 BHK</a>
+                    <a href="#" onclick="filterFlats('3bhk')">3 BHK</a>
+                    <a href="#" onclick="filterFlats('4bhk')">4 BHK</a>
+                    <a href="#" onclick="filterFlats('penthouse')">Penthouse</a>
                 </div>
             </div>
 
             <div class="dropdown">
                 <button class="dropdown-btn">
-                    🏢 Buildings
-                    <span class="arrow">▼</span>
+                    Buildings ▼
                 </button>
                 <div class="dropdown-content">
-                    <a href="#tower-a">Tower A</a>
-                    <a href="#tower-b">Tower B</a>
-                    <a href="#tower-c">Tower C</a>
-                    <a href="#villa">Villa Complex</a>
+                    <a href="#" onclick="filterFlats('tower-a')">Tower A</a>
+                    <a href="#" onclick="filterFlats('tower-b')">Tower B</a>
+                    <a href="#" onclick="filterFlats('tower-c')">Tower C</a>
+                    <a href="#" onclick="filterFlats('villa')">Villa</a>
                 </div>
             </div>
 
-            <div class="dropdown">
-                <button class="dropdown-btn">
-                    💰 Price Range
-                    <span class="arrow">▼</span>
-                </button>
-                <div class="dropdown-content">
-                    <a href="#under-50">Under ₹50L</a>
-                    <a href="#50-75">₹50L - ₹75L</a>
-                    <a href="#75-100">₹75L - ₹1Cr</a>
-                    <a href="#above-100">Above ₹1Cr</a>
-                </div>
-            </div>
-
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="Search flats by number, price, or features..." id="searchInput">
-                <span class="search-icon">🔍</span>
+            <div class="search-box">
+                <input type="text" placeholder="Search flats..." id="searchInput" onkeyup="searchFlats()">
             </div>
         </div>
 
-        <!-- STATS SECTION -->
-        <div class="stats-section">
+        <!-- STATS -->
+        <div class="stats">
             <div class="stats-grid">
-                <div class="stat-card stat-total">
-                    <div class="stat-number">48</div>
-                    <div class="stat-label">Total Flats</div>
+                <div class="stat-item stat-total">
+                    <h3 id="totalCount">50</h3>
+                    <p>Total Flats</p>
                 </div>
-                <div class="stat-card stat-available">
-                    <div class="stat-number">28</div>
-                    <div class="stat-label">Available</div>
+                <div class="stat-item stat-available">
+                    <h3 id="availableCount">30</h3>
+                    <p>Available</p>
                 </div>
-                <div class="stat-card stat-sold">
-                    <div class="stat-number">15</div>
-                    <div class="stat-label">Sold</div>
+                <div class="stat-item stat-sold">
+                    <h3 id="soldCount">15</h3>
+                    <p>Sold</p>
                 </div>
-                <div class="stat-card stat-reserved">
-                    <div class="stat-number">5</div>
-                    <div class="stat-label">Reserved</div>
+                <div class="stat-item stat-reserved">
+                    <h3 id="reservedCount">5</h3>
+                    <p>Reserved</p>
                 </div>
             </div>
         </div>
 
-        <!-- INVENTORY GRID -->
+        <!-- ALL INVENTORY -->
         <div class="inventory-grid" id="inventoryGrid">
-            <!-- Tower A Flats -->
-            <div class="flat-card">
+            <!-- Tower A -->
+            <div class="flat-card" data-building="tower-a" data-type="2bhk" data-status="available">
                 <div class="flat-header">
                     <div class="flat-number">A-101</div>
-                    <div class="status-badge status-available">Available</div>
+                    <div class="status available">Available</div>
                 </div>
                 <div class="flat-details">
                     <div class="detail-row">
@@ -455,11 +378,11 @@
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Floor:</span>
-                        <span class="detail-value">Ground Floor</span>
+                        <span class="detail-value">1st Floor</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Carpet:</span>
-                        <span class="detail-value">Premium Persian</span>
+                        <span class="detail-value">Persian</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Price:</span>
@@ -468,10 +391,10 @@
                 </div>
             </div>
 
-            <div class="flat-card">
+            <div class="flat-card" data-building="tower-a" data-type="2bhk" data-status="sold">
                 <div class="flat-header">
                     <div class="flat-number">A-102</div>
-                    <div class="status-badge status-sold">Sold</div>
+                    <div class="status sold">Sold</div>
                 </div>
                 <div class="flat-details">
                     <div class="detail-row">
@@ -484,11 +407,11 @@
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Floor:</span>
-                        <span class="detail-value">Ground Floor</span>
+                        <span class="detail-value">1st Floor</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Carpet:</span>
-                        <span class="detail-value">Turkish Silk</span>
+                        <span class="detail-value">Turkish</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Price:</span>
@@ -497,10 +420,10 @@
                 </div>
             </div>
 
-            <div class="flat-card">
+            <div class="flat-card" data-building="tower-a" data-type="3bhk" data-status="available">
                 <div class="flat-header">
                     <div class="flat-number">A-201</div>
-                    <div class="status-badge status-available">Available</div>
+                    <div class="status available">Available</div>
                 </div>
                 <div class="flat-details">
                     <div class="detail-row">
@@ -517,7 +440,7 @@
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Carpet:</span>
-                        <span class="detail-value">Royal Kashmiri</span>
+                        <span class="detail-value">Kashmiri</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Price:</span>
@@ -526,10 +449,10 @@
                 </div>
             </div>
 
-            <div class="flat-card">
+            <div class="flat-card" data-building="tower-a" data-type="3bhk" data-status="reserved">
                 <div class="flat-header">
                     <div class="flat-number">A-202</div>
-                    <div class="status-badge status-reserved">Reserved</div>
+                    <div class="status reserved">Reserved</div>
                 </div>
                 <div class="flat-details">
                     <div class="detail-row">
@@ -555,40 +478,10 @@
                 </div>
             </div>
 
-            <!-- Tower B Flats -->
-            <div class="flat-card">
+            <div class="flat-card" data-building="tower-a" data-type="4bhk" data-status="available">
                 <div class="flat-header">
-                    <div class="flat-number">B-101</div>
-                    <div class="status-badge status-available">Available</div>
-                </div>
-                <div class="flat-details">
-                    <div class="detail-row">
-                        <span class="detail-label">Type:</span>
-                        <span class="detail-value">1 BHK</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Area:</span>
-                        <span class="detail-value">850 sq ft</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Floor:</span>
-                        <span class="detail-value">Ground Floor</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Carpet:</span>
-                        <span class="detail-value">Modern Geometric</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Price:</span>
-                        <span class="detail-value price">₹42,50,000</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flat-card">
-                <div class="flat-header">
-                    <div class="flat-number">B-301</div>
-                    <div class="status-badge status-available">Available</div>
+                    <div class="flat-number">A-301</div>
+                    <div class="status available">Available</div>
                 </div>
                 <div class="flat-details">
                     <div class="detail-row">
@@ -605,7 +498,7 @@
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Carpet:</span>
-                        <span class="detail-value">Luxury Silk Persian</span>
+                        <span class="detail-value">Silk Persian</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Price:</span>
@@ -614,11 +507,128 @@
                 </div>
             </div>
 
-            <!-- Tower C Flats -->
-            <div class="flat-card">
+            <!-- Tower B -->
+            <div class="flat-card" data-building="tower-b" data-type="1bhk" data-status="available">
+                <div class="flat-header">
+                    <div class="flat-number">B-101</div>
+                    <div class="status available">Available</div>
+                </div>
+                <div class="flat-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Type:</span>
+                        <span class="detail-value">1 BHK</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Area:</span>
+                        <span class="detail-value">650 sq ft</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Floor:</span>
+                        <span class="detail-value">1st Floor</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Carpet:</span>
+                        <span class="detail-value">Modern</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Price:</span>
+                        <span class="detail-value price">₹35,00,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flat-card" data-building="tower-b" data-type="1bhk" data-status="sold">
+                <div class="flat-header">
+                    <div class="flat-number">B-102</div>
+                    <div class="status sold">Sold</div>
+                </div>
+                <div class="flat-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Type:</span>
+                        <span class="detail-value">1 BHK</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Area:</span>
+                        <span class="detail-value">650 sq ft</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Floor:</span>
+                        <span class="detail-value">1st Floor</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Carpet:</span>
+                        <span class="detail-value">Contemporary</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Price:</span>
+                        <span class="detail-value price">₹36,50,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flat-card" data-building="tower-b" data-type="2bhk" data-status="available">
+                <div class="flat-header">
+                    <div class="flat-number">B-201</div>
+                    <div class="status available">Available</div>
+                </div>
+                <div class="flat-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Type:</span>
+                        <span class="detail-value">2 BHK</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Area:</span>
+                        <span class="detail-value">1,100 sq ft</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Floor:</span>
+                        <span class="detail-value">2nd Floor</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Carpet:</span>
+                        <span class="detail-value">Traditional</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Price:</span>
+                        <span class="detail-value price">₹58,00,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flat-card" data-building="tower-b" data-type="3bhk" data-status="available">
+                <div class="flat-header">
+                    <div class="flat-number">B-301</div>
+                    <div class="status available">Available</div>
+                </div>
+                <div class="flat-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Type:</span>
+                        <span class="detail-value">3 BHK</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Area:</span>
+                        <span class="detail-value">1,400 sq ft</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Floor:</span>
+                        <span class="detail-value">3rd Floor</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Carpet:</span>
+                        <span class="detail-value">Designer</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Price:</span>
+                        <span class="detail-value price">₹78,00,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tower C -->
+            <div class="flat-card" data-building="tower-c" data-type="penthouse" data-status="available">
                 <div class="flat-header">
                     <div class="flat-number">C-501</div>
-                    <div class="status-badge status-available">Available</div>
+                    <div class="status available">Available</div>
                 </div>
                 <div class="flat-details">
                     <div class="detail-row">
@@ -644,10 +654,10 @@
                 </div>
             </div>
 
-            <div class="flat-card">
+            <div class="flat-card" data-building="tower-c" data-type="3bhk" data-status="sold">
                 <div class="flat-header">
                     <div class="flat-number">C-401</div>
-                    <div class="status-badge status-sold">Sold</div>
+                    <div class="status sold">Sold</div>
                 </div>
                 <div class="flat-details">
                     <div class="detail-row">
@@ -664,7 +674,7 @@
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Carpet:</span>
-                        <span class="detail-value">Hand-woven Kashmiri</span>
+                        <span class="detail-value">Hand-woven</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Price:</span>
@@ -672,90 +682,98 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Villa Complex -->
+            <div class="flat-card" data-building="villa" data-type="4bhk" data-status="available">
+                <div class="flat-header">
+                    <div class="flat-number">V-001</div>
+                    <div class="status available">Available</div>
+                </div>
+                <div class="flat-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Type:</span>
+                        <span class="detail-value">4 BHK Villa</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Area:</span>
+                        <span class="detail-value">3,000 sq ft</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Floor:</span>
+                        <span class="detail-value">Ground + 1</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Carpet:</span>
+                        <span class="detail-value">Premium Silk</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Price:</span>
+                        <span class="detail-value price">₹3,50,00,000</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- FOOTER -->
         <div class="footer">
-            <p>© 2025 Inventory Panel v1.95 | Professional Property Management System</p>
+            <p>© 2025 MICL - Inventory Panel v 1.95 | Created by Anas Lila</p>
         </div>
     </div>
 
     <script>
-        // SEARCH FUNCTIONALITY
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const flatCards = document.querySelectorAll('.flat-card');
+        function searchFlats() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const cards = document.querySelectorAll('.flat-card');
             
-            flatCards.forEach(card => {
+            cards.forEach(card => {
                 const text = card.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
+                if (text.includes(filter)) {
                     card.style.display = 'block';
-                    card.style.opacity = '1';
                 } else {
                     card.style.display = 'none';
                 }
             });
-        });
+            
+            updateStats();
+        }
 
-        // DROPDOWN LINK FUNCTIONALITY
-        document.querySelectorAll('.dropdown-content a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const filter = this.textContent.toLowerCase();
-                const flatCards = document.querySelectorAll('.flat-card');
-                
-                flatCards.forEach(card => {
-                    const cardText = card.textContent.toLowerCase();
-                    
-                    if (filter === 'all properties' || 
-                        cardText.includes(filter) || 
-                        (filter === 'available flats' && cardText.includes('available')) ||
-                        (filter === 'sold properties' && cardText.includes('sold')) ||
-                        (filter === 'reserved units' && cardText.includes('reserved'))) {
+        function filterFlats(type) {
+            const cards = document.querySelectorAll('.flat-card');
+            
+            cards.forEach(card => {
+                if (type === 'all') {
+                    card.style.display = 'block';
+                } else if (type === 'available' || type === 'sold' || type === 'reserved') {
+                    if (card.dataset.status === type) {
                         card.style.display = 'block';
-                        card.style.opacity = '1';
                     } else {
                         card.style.display = 'none';
                     }
-                });
+                } else {
+                    if (card.dataset.type === type || card.dataset.building === type) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
             });
-        });
-
-        // SMOOTH ANIMATIONS
-        window.addEventListener('load', function() {
-            const cards = document.querySelectorAll('.flat-card');
-            cards.forEach((card, index) => {
-                setTimeout(() => {
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-                    card.style.transition = 'all 0.6s ease';
-                    
-                    setTimeout(() => {
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    }, 100);
-                }, index * 100);
-            });
-        });
-
-        // REAL-TIME STATS UPDATE
-        function updateStats() {
-            const cards = document.querySelectorAll('.flat-card:not([style*="display: none"])');
-            const available = document.querySelectorAll('.flat-card:not([style*="display: none"]) .status-available').length;
-            const sold = document.querySelectorAll('.flat-card:not([style*="display: none"]) .status-sold').length;
-            const reserved = document.querySelectorAll('.flat-card:not([style*="display: none"]) .status-reserved').length;
             
-            document.querySelector('.stat-total .stat-number').textContent = cards.length;
-            document.querySelector('.stat-available .stat-number').textContent = available;
-            document.querySelector('.stat-sold .stat-number').textContent = sold;
-            document.querySelector('.stat-reserved .stat-number').textContent = reserved;
+            updateStats();
         }
 
-        // Update stats when search or filter changes
-        document.getElementById('searchInput').addEventListener('input', updateStats);
-        document.querySelectorAll('.dropdown-content a').forEach(link => {
-            link.addEventListener('click', () => setTimeout(updateStats, 100));
-        });
+        function updateStats() {
+            const visibleCards = document.querySelectorAll('.flat-card[style="display: block"], .flat-card:not([style*="display: none"])');
+            const available = Array.from(visibleCards).filter(card => card.dataset.status === 'available').length;
+            const sold = Array.from(visibleCards).filter(card => card.dataset.status === 'sold').length;
+            const reserved = Array.from(visibleCards).filter(card => card.dataset.status === 'reserved').length;
+            
+            document.getElementById('totalCount').textContent = visibleCards.length;
+            document.getElementById('availableCount').textContent = available;
+            document.getElementById('soldCount').textContent = sold;
+            document.getElementById('reservedCount').textContent = reserved;
+        }
     </script>
 </body>
 </html>
