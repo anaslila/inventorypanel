@@ -1124,11 +1124,20 @@
             return result.trim() + ' Only';
         }
 
+        // FIXED FORMATTING FUNCTION - NO MORE "0" AFTER DELETING
         function formatAndCalculate(input) {
             let value = input.value;
             
             // Remove non-digit characters except decimal point
             value = value.replace(/[^\d.]/g, '');
+            
+            // If completely empty, keep it empty
+            if (value === '' || value === '0') {
+                input.value = '';
+                document.getElementById('loanAmountWords').textContent = 'Rupees Zero Only';
+                calculateEMI();
+                return;
+            }
             
             // Format the number in Indian style
             let formatted = formatIndianNumber(value);
