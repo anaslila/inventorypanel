@@ -306,3 +306,81 @@ document.addEventListener('keydown', function(e) {
         showEmptyState();
     }
 });
+<script>
+/* ========== 1. LOGIN HANDLER ========== */
+function doLogin(){
+    if ($id('user').value === 'admin123' && $id('pass').value === 'admin456'){
+        localStorage.logged = '1';
+        $id('loginBox').style.display = 'none';
+        $id('app').style.display   = 'block';
+    }else{
+        alert('Invalid credentials');
+    }
+}
+if (localStorage.logged === '1'){
+    // Auto-open panel if already authenticated
+    document.addEventListener('DOMContentLoaded', ()=> {
+        $id('loginBox').style.display = 'none';
+        $id('app').style.display   = 'block';
+    });
+}
+
+/* ========== 2. GLOBAL DATA HOLDERS ========== */
+let propertyData   = {};   // { "A P104": {...} }
+let allUnitNumbers = [];   // ["A P104","B 2401",…]
+
+/* ========== 3. EXCEL READER (SheetJS) ========== */
+function readExcel(evt){
+    const file = evt.target.files[0];
+    if (!file){ return; }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        const wb = XLSX.read(e.target.result, {type:'array'});
+        const firstTab = wb.SheetNames[0];
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[firstTab]);
+
+        // EXPECTED COLUMN HEADERS in template:
+        // Unit Number | Band | Facing | Carpet | Typology | Price | Stamp | GST | Reg
+        // | Other | Possession | All Inclusive | Tower | Payment Plan
+        propertyData = {};
+        rows.forEach(r=>{
+            const key = (r['Unit Number']+'').trim().toUpperCase();
+            propertyData[key] = {
+                band  : r.Band,
+                face  : r.Facing,
+                carpet: r.Carpet,
+                type  : r.Typology,
+                price : +r.Price,
+                stamp : +r.Stamp,
+                gst   : +r.GST,
+                reg   : +r.Reg,
+                other : +r.Other,
+                poss  : +r.Possession,
+                total : +r['All Inclusive'],
+                tower : r.Tower,
+                plan  : r['Payment Plan']
+            };
+        });
+
+        allUnitNumbers = Object.keys(propertyData);
+
+        // store locally for offline reuse
+        localStorage.priceMap = JSON.stringify(propertyData);
+        localStorage.unitList = JSON.stringify(allUnitNumbers);
+
+        alert('✅ Inventory uploaded. Start searching!');
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+/* ========== 4. RESTORE CACHE ON LOAD ========== */
+if (localStorage.priceMap){
+    propertyData   = JSON.parse(localStorage.priceMap);
+    allUnitNumbers = JSON.parse(localStorage.unitList || '[]');
+}
+
+/* ========== 5. HELPER SHORTCUT ========== */
+function $id(id){ return document.getElementById(id); }
+</script>
+
