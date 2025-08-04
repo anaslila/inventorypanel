@@ -1,135 +1,194 @@
-<!-- LOGIN LAYER -->
-<div id="loginBox" style="max-width:340px;margin:60px auto;text-align:center">
-    <h2 style="margin-bottom:20px">MICL Inventory Login</h2>
-    <input id="user" placeholder="Username"
-           style="width:100%;padding:12px;font-size:15px;margin-bottom:10px">
-    <input id="pass" placeholder="Password" type="password"
-           style="width:100%;padding:12px;font-size:15px;margin-bottom:18px">
-    <button onclick="doLogin()"
-            style="padding:10px 26px;font-size:15px;background:#667eea;color:#fff;border:none;border-radius:6px;cursor:pointer">
-        Sign in
-    </button>
-</div>
-
-<!DOCTYPE html>
-<html lang="en">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory Panel v1.92 - MICL</title>
-  
-  <!-- Favicon -->
-  <link rel="icon" href="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png" type="image/png">
-  <link rel="shortcut icon" href="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png" type="image/png">
-  
-  <!-- CSS -->
-  <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- SheetJS reader -->
-<script src="xlsx.full.min.js"></script>
-    <label style="font-weight:600;display:inline-block;margin:20px 0">
-    Upload latest Excel:
-    <input type="file" accept=".xlsx" onchange="readExcel(event)">
-</label>
-
+  <title>Inventory Panel v1.95 • MICL</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style type="text/css">
+    /* —— BASIC RESET —— */
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+    body{background:#eef2f7;padding:30px;color:#2e3a46}
+    /* —— CARD —— */
+    .card{max-width:920px;margin:auto;background:#fff;border-radius:16px;
+          box-shadow:0 8px 22px rgba(0,0,0,.08);overflow:hidden}
+    /* —— HEADER —— */
+    .hdr{background:#576bff;color:#fff;padding:26px 32px;display:flex;
+         align-items:center;gap:20px}
+    .hdr img{width:56px;height:56px;border-radius:12px;background:#fff;padding:6px}
+    .hdr h1{font-size:24px;font-weight:700}
+    .hdr small{display:block;font-size:13px;opacity:.85}
+    .ver{margin-left:auto;background:rgba(255,255,255,.25);padding:6px 18px;
+         border-radius:30px;font-size:12px;font-weight:600}
+    /* —— CONTENT —— */
+    .inner{padding:34px}
+    label{font-size:12px;font-weight:700;color:#516070;display:block;margin-bottom:6px}
+    input[type=text]{width:100%;padding:13px 15px;border:2px solid #dbe1eb;
+                     border-radius:8px;font-size:15px;font-weight:600;
+                     transition:border-color .25s}
+    input[type=text]:focus{border-color:#576bff;outline:none}
+    input[readonly]{background:#f5f7fa;color:#44505c}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+          gap:20px;margin-top:24px}
+    .hi{background:#e7f1ff!important;color:#2a4ead!important;text-align:center;
+        font-size:18px;font-weight:800}
+    .tower{background:#576bff!important;color:#fff!important;text-align:center;
+           font-weight:700}
+    /* —— SUGGESTIONS —— */
+    .box{position:relative}
+    .drop{position:absolute;top:100%;left:0;right:0;background:#fff;
+          border:2px solid #576bff;border-top:none;border-radius:0 0 8px 8px;
+          max-height:250px;overflow-y:auto;display:none;z-index:100}
+    .itm{padding:12px 15px;border-bottom:1px solid #edf1f5;cursor:pointer}
+    .itm:hover{background:#f1f5ff}
+    /* —— PAYMENT —— */
+    .pay{margin-top:32px;display:none}
+    .pay h3{font-size:16px;font-weight:700;margin-bottom:14px}
+    table{width:100%;border-collapse:collapse;border:1px solid #dbe1eb;
+          border-radius:8px;overflow:hidden}
+    th,td{padding:12px;border-bottom:1px solid #edf1f5;text-align:center}
+    th{background:#f4f6fa;font-size:12px;font-weight:700}
+    tr:last-child td{border-bottom:none}
+    /* —— FOOTER —— */
+    footer{text-align:center;font-size:12px;color:#6c7a88;margin:40px auto 28px}
+    /* —— RESPONSIVE —— */
+    @media(max-width:520px){.grid{grid-template-columns:1fr}}
+  </style>
 </head>
+
 <body>
-  <div class="container">
-    <!-- ── Header with MICL Logo ─────────────────────────────── -->
-    <div class="header">
-      <div class="logo">
-        <img src="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png" alt="MICL Logo" class="logo-img">
-        <div>
-          <h1>Inventory Panel v1.92</h1>
-          <p>MICL Property Lookup System</p>
-        </div>
-      </div>
-      <div class="controls">
-        <button class="minimize-btn">—</button>
-        <button class="close-btn">✖</button>
-      </div>
-    </div>
-
-    <!-- ── Content ────────────────────────────────── -->
-    <div class="content">
-      <!-- Input block -->
-      <div class="input-section">
-        <div class="form-group">
-          <label>Flat Number / Inventory Number</label>
-          <div class="input-wrapper">
-            <input id="flatNumber" placeholder="Type flat number (e.g. A P104)" autocomplete="off">
-            <div class="dropdown-icon">▼</div>
-            <div id="suggestions" class="suggestions"></div>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group"><label>Band</label><input id="band" readonly></div>
-          <div class="form-group"><label>Facing</label><input id="facing" readonly></div>
-          <div class="form-group"><label>RERA Carpet</label><input id="carpet" readonly></div>
-          <div class="form-group"><label>Typology</label><input id="typology" readonly></div>
-        </div>
-      </div>
-
-      <!-- Pricing -->
-      <div class="pricing-section">
-        <div class="form-row">
-          <div class="form-group"><label>Agreement Value / Flat Cost</label><input id="agreementValue" readonly></div>
-          <div class="form-group"><label>Stamp Duty</label><input id="stampDuty" readonly></div>
-          <div class="form-group"><label>GST</label><input id="gst" readonly></div>
-          <div class="form-group"><label>Reg Amt</label><input id="regAmt" readonly></div>
-          <div class="form-group"><label>Other Charges</label><input id="otherCharges" readonly></div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group full-width">
-            <label>All Inclusive Amount</label>
-            <input id="allInclusive" class="highlight" readonly>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group"><label>Possession Charges</label><input id="possessionCharges" readonly></div>
-          <div class="form-group"><label>Tower</label><input id="tower" class="tower-input" readonly></div>
-        </div>
-      </div>
-
-      <!-- Payment plan -->
-      <div id="paymentSection" class="payment-section" style="display:none">
-        <div class="payment-header">
-          <h3 id="paymentPlanTitle">Payment Plan Breakup (9:11:80)</h3>
-          <div id="towerName" class="tower-name">Aster</div>
-        </div>
-        <div class="payment-table">
-          <div class="payment-row header">
-            <div class="percentage">%</div><div class="amount">Amount</div><div class="milestone">Milestone</div>
-          </div>
-          <div id="paymentBreakdown"></div>
-        </div>
-      </div>
-
-      <!-- Notes -->
-      <div class="notes-section">
-        <div class="note-title">*NOTE</div>
-        <div class="note-item">*Payment plan is a split of only flat cost</div>
-        <div class="note-item">*All the prices are negotiable</div>
-        <div class="note-item">*Agreement value is without car park</div>
-      </div>
-
-      <!-- Empty state -->
-      <div id="emptyState" class="empty-state">
-        <h3>Enter Flat Number</h3>
-        <p>Type a flat number (e.g., A P104, B 201, C 1501) to view property details</p>
-      </div>
-    </div>
+<div class="card">
+  <!-- HEADER -->
+  <div class="hdr">
+     <img src="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png"
+          alt="MICL"/>
+     <div>
+        <h1>Inventory Panel</h1>
+        <small>MICL Property System</small>
+     </div>
+     <span class="ver">v 1.95</span>
   </div>
-    <footer style="text-align:center;font-size:12px;color:#718096;margin-top:40px">
-  Created by Anas Lila • Inventory Panel v1.95
-</footer>
 
+  <!-- CONTENT -->
+  <div class="inner">
+      <!-- SEARCH -->
+      <div class="box">
+          <label>Flat / Inventory Number</label>
+          <input id="q" type="text" placeholder="Start typing e.g. A P104 or D 2601"/>
+          <div id="drop" class="drop"></div>
+      </div>
 
-  <!-- JS -->
-  <script src="data.js"></script>
-  <script src="script.js"></script>
+      <!-- DETAILS -->
+      <div class="grid">
+         <div><label>Band</label><input id="band" readonly="readonly"/></div>
+         <div><label>Facing</label><input id="face" readonly="readonly"/></div>
+         <div><label>Carpet</label><input id="carpet" readonly="readonly"/></div>
+         <div><label>Typology</label><input id="type" readonly="readonly"/></div>
+      </div>
+      <div class="grid">
+         <div><label>Agreement Value</label><input id="price" readonly="readonly"/></div>
+         <div><label>Stamp Duty</label><input id="stamp" readonly="readonly"/></div>
+         <div><label>GST</label><input id="gst" readonly="readonly"/></div>
+         <div><label>Reg Amt</label><input id="reg" readonly="readonly"/></div>
+         <div><label>Other Charges</label><input id="other" readonly="readonly"/></div>
+      </div>
+      <div class="grid">
+         <div style="grid-column:1/-1">
+             <label>All-Inclusive Amount</label>
+             <input id="total" class="hi" readonly="readonly"/>
+         </div>
+      </div>
+      <div class="grid">
+         <div><label>Possession Charges</label><input id="poss" readonly="readonly"/></div>
+         <div><label>Tower</label><input id="tower" class="tower" readonly="readonly"/></div>
+      </div>
+
+      <!-- PAYMENT PLAN -->
+      <div id="pay" class="pay">
+        <h3 id="planHead">Payment Plan</h3>
+        <table>
+            <thead><tr><th>%</th><th>Amount</th><th>Milestone</th></tr></thead>
+            <tbody id="pbody"></tbody>
+        </table>
+      </div>
+  </div><!-- .inner -->
+</div><!-- .card -->
+
+<footer>Created by Anas Lila • Inventory Panel v1.95</footer>
+
+<script type="text/javascript">
+/* —— HELPER —— */
+function $(id){return document.getElementById(id);}
+const ₹ = n => {
+  if(!n){return "";}
+  const s = Math.round(n).toString();
+  const r = s.replace(/\B(?=(\d{3})+(?!\d))/g,",");
+  return "₹ "+r;
+};
+
+/* —— DATA (add more rows as needed) —— */
+const data = {
+  "A P104":{band:"Band 1",face:"West / SIS",carpet:"430 sq ft",type:"1BHK",
+            price:8256000,stamp:577920,gst:412800,reg:30000,other:487900,
+            poss:95100,total:9859720,tower:"Aster",plan:"9:11:80"},
+  "B 101": {band:"Band 1",face:"East / SGNP",carpet:"671 sq ft",type:"2BHK",
+            price:12883200,stamp:901824,gst:644160,reg:30000,other:637200,
+            poss:148120,total:15244504,tower:"Blu",plan:"9:11:80"},
+  "C 101": {band:"Band 1",face:"East / SGNP",carpet:"452 sq ft",type:"1BHK",
+            price:8678400,stamp:607488,gst:433920,reg:30000,other:487900,
+            poss:99940,total:10337648,tower:"Clove",plan:"9:91"},
+  "D 2601":{band:"Band 3",face:"East / SGNP",carpet:"655 sq ft",type:"2BHK",
+            price:13558000,stamp:949060,gst:677900,reg:30000,other:637200,
+            poss:144600,total:15997760,tower:"Dion",plan:"9:91"}
+};
+
+/* —— PAYMENT PLAN TEMPLATES —— */
+const planTpl = {
+  "9:11:80":[{p:9,s:"On Booking"},{p:11,s:"On Terrace"},{p:80,s:"On Possession"}],
+  "9:91":[{p:9,s:"On Booking"},{p:91,s:"On Occupancy Certificate"}]
+};
+
+/* —— SEARCH LIST —— */
+const units = Object.keys(data);               // only units that have details
+/* —— AUTOCOMPLETE —— */
+$("q").oninput = function(){
+   const v = this.value.toUpperCase().trim();
+   const box = $("drop");
+   if(v.length<1){box.style.display="none";return;}
+   const hits = units.filter(u=>u.includes(v)).slice(0,10);
+   box.innerHTML = hits.map(u=>'<div class="itm" onclick="sel(\''+u+'\')">'+u+'</div>').join('');
+   box.style.display = hits.length?"block":"none";
+};
+document.addEventListener("click",e=>{
+   if(!e.target.closest(".box")){$("drop").style.display="none";}
+});
+
+/* —— WHEN USER PICKS A FLAT —— */
+window.sel = key=>{
+   $("q").value=key;
+   $("drop").style.display="none";
+   fill(key);
+};
+function fill(k){
+   const d = data[k];
+   if(!d){return;}
+   $("band").value=d.band; $("face").value=d.face; $("carpet").value=d.carpet;
+   $("type").value=d.type; $("price").value=₹(d.price); $("stamp").value=₹(d.stamp);
+   $("gst").value=₹(d.gst); $("reg").value=₹(d.reg); $("other").value=₹(d.other);
+   $("poss").value=₹(d.poss); $("total").value=₹(d.total); $("tower").value=d.tower;
+
+   /* payment rows */
+   const body = $("pbody"); body.innerHTML="";
+   const arr = planTpl[d.plan]||[];
+   arr.forEach(r=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML='<td>'+r.p+'%</td><td>'+₹(Math.round(d.price*r.p/100))+'</td><td>'+r.s+'</td>';
+      body.appendChild(tr);
+   });
+   $("planHead").textContent = "Payment Plan ("+d.plan+")";
+   $("pay").style.display = "block";
+}
+</script>
 </body>
 </html>
