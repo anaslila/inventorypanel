@@ -1,116 +1,500 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Inventory Panel v1.92</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Panel v1.95 - MICL Professional</title>
     <link rel="icon" href="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .header { background: #4a90e2; color: white; padding: 15px 20px; border-radius: 10px 10px 0 0; display: flex; align-items: center; gap: 15px; }
-        .logo { width: 50px; height: 50px; background: white; border-radius: 8px; padding: 5px; }
-        .content { padding: 30px; }
-        .input-group { margin-bottom: 20px; position: relative; }
-        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; text-transform: uppercase; font-size: 12px; }
-        .input-group input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; }
-        .input-group input:focus { border-color: #4a90e2; outline: none; }
-        .input-group input[readonly] { background: #f8f8f8; }
-        .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .highlight { background: #E8F4FD !important; border-color: #4a90e2 !important; font-weight: bold; font-size: 16px; color: #2d5a87; }
-        .tower-field { background: #4a90e2 !important; color: white !important; text-align: center; font-weight: bold; }
-        .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #4a90e2; border-top: none; border-radius: 0 0 6px 6px; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; }
-        .suggestion { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
-        .suggestion:hover { background: #f0f8ff; }
-        .payment-section { margin: 30px 0; padding: 20px; background: #f9f9f9; border-radius: 8px; display: none; }
-        .payment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .payment-title { background: #2d5a87; color: white; padding: 12px 20px; border-radius: 6px; font-weight: bold; flex: 1; text-align: center; }
-        .tower-badge { background: #4a90e2; color: white; padding: 12px 20px; border-radius: 6px; font-weight: bold; margin-left: 10px; }
-        .payment-table { background: white; border-radius: 6px; overflow: hidden; border: 1px solid #ddd; }
-        .payment-row { display: grid; grid-template-columns: 80px 1fr 2fr; }
-        .payment-row.header { background: #f5f5f5; font-weight: bold; }
-        .payment-row div { padding: 15px; border-bottom: 1px solid #eee; }
-        .payment-row:not(.header) .percent { background: #e3f2fd; color: #1976d2; font-weight: bold; text-align: center; }
-        .payment-row:not(.header) .amount { color: #2e7d32; font-weight: bold; }
-        .notes { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 15px; margin: 20px 0; }
-        .note-title { font-weight: bold; color: #856404; margin-bottom: 8px; }
-        .note-item { color: #856404; font-size: 13px; margin-bottom: 4px; }
-        .empty-state { text-align: center; padding: 50px; color: #666; background: #f8f8f8; border-radius: 8px; margin: 20px 0; }
-        .error-state { background: #ffebee; border: 1px solid #ffcdd2; border-radius: 6px; padding: 20px; text-align: center; color: #c62828; margin: 20px 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c3e50;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .logo img {
+            width: 55px;
+            height: 55px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 6px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .logo-text p {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .version-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .content {
+            padding: 35px;
+            background: #fafbfc;
+        }
+        
+        .input-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border: 1px solid #e8ecf0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8ecf0;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: #ffffff;
+        }
+        
+        .form-group input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: #fafbff;
+        }
+        
+        .form-group input[readonly] {
+            background: #f8f9fa;
+            color: #495057;
+            cursor: not-allowed;
+            border-color: #dee2e6;
+        }
+        
+        .highlight {
+            background: #e8f4f8 !important;
+            border-color: #667eea !important;
+            font-weight: 700 !important;
+            font-size: 18px !important;
+            color: #2d5a87 !important;
+            text-align: center;
+        }
+        
+        .tower-input {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            text-align: center;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .suggestions.show {
+            display: block;
+        }
+        
+        .suggestion-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f3f4;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .suggestion-item:hover {
+            background: #f8f9ff;
+            transform: translateX(2px);
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .unit-number {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        
+        .unit-details {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 2px;
+        }
+        
+        .payment-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 1px solid #e8ecf0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: none;
+        }
+        
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        
+        .payment-title {
+            background: linear-gradient(135deg, #2c5282 0%, #2d3748 100%);
+            color: white;
+            padding: 14px 25px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            flex: 1;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(44, 82, 130, 0.3);
+        }
+        
+        .tower-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .payment-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #e8ecf0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .payment-row {
+            display: grid;
+            grid-template-columns: 100px 1fr 2fr;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .payment-row:last-child {
+            border-bottom: none;
+        }
+        
+        .payment-row.header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-weight: 700;
+            color: #495057;
+        }
+        
+        .payment-row div {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .payment-row.header div {
+            justify-content: center;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        
+        .payment-row:not(.header) .percentage {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1565c0;
+            font-weight: 700;
+            font-size: 16px;
+            justify-content: center;
+        }
+        
+        .payment-row:not(.header) .amount {
+            color: #2e7d32;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        
+        .payment-row:not(.header) .milestone {
+            color: #424242;
+            font-weight: 500;
+        }
+        
+        .notes-section {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+            border: 1px solid #ffcc02;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .note-title {
+            font-weight: 700;
+            color: #f57f17;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .note-item {
+            color: #ef6c00;
+            font-size: 13px;
+            margin-bottom: 6px;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 30px;
+            background: white;
+            border-radius: 12px;
+            border: 2px dashed #dee2e6;
+            margin: 25px 0;
+        }
+        
+        .empty-state h3 {
+            color: #6c757d;
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .empty-state p {
+            color: #adb5bd;
+            font-size: 14px;
+        }
+        
+        .error-state {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border: 1px solid #f44336;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            color: #c62828;
+            margin: 25px 0;
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.1);
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 15px 35px;
+            border-top: 1px solid #e8ecf0;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .content { padding: 20px; }
+            .row { grid-template-columns: 1fr; gap: 15px; }
+            .payment-header { flex-direction: column; gap: 10px; }
+            .payment-title { margin: 0; }
+            .tower-badge { width: 100%; }
+            .payment-row { grid-template-columns: 80px 1fr 1.5fr; font-size: 13px; }
+        }
+        
+        @media (max-width: 480px) {
+            .payment-row { grid-template-columns: 1fr; text-align: center; }
+            .payment-row div { padding: 12px 8px; border-bottom: 1px solid #f0f0f0; }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #667eea; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5a67d8; }
+        
+        /* Animation */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png" class="logo" alt="MICL Logo">
-            <div>
-                <h2>Inventory Panel v1.92</h2>
-                <p>MICL Property Lookup System</p>
+            <div class="logo">
+                <img src="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png" alt="MICL Logo">
+                <div class="logo-text">
+                    <h1>Inventory Panel v1.95</h1>
+                    <p>Professional Property Management System</p>
+                </div>
             </div>
+            <div class="version-badge">Latest Update</div>
         </div>
 
         <div class="content">
-            <div class="input-group">
-                <label>Flat Number / Inventory Number</label>
-                <input type="text" id="flatInput" placeholder="Type flat number (e.g. A P104)" autocomplete="off">
-                <div id="suggestions" class="suggestions"></div>
-            </div>
+            <div class="input-section">
+                <div class="form-group">
+                    <label>🏠 Flat Number / Inventory Number</label>
+                    <input type="text" id="flatInput" placeholder="Enter flat number (e.g., A P104, D 2601)" autocomplete="off">
+                    <div id="suggestions" class="suggestions"></div>
+                </div>
 
-            <div class="row">
-                <div class="input-group">
-                    <label>Band</label>
-                    <input type="text" id="band" readonly>
+                <div class="row">
+                    <div class="form-group">
+                        <label>📊 Band</label>
+                        <input type="text" id="band" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>🧭 Facing</label>
+                        <input type="text" id="facing" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>📐 RERA Carpet</label>
+                        <input type="text" id="carpet" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>🏡 Typology</label>
+                        <input type="text" id="typology" readonly>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label>Facing</label>
-                    <input type="text" id="facing" readonly>
-                </div>
-                <div class="input-group">
-                    <label>RERA Carpet</label>
-                    <input type="text" id="carpet" readonly>
-                </div>
-                <div class="input-group">
-                    <label>Typology</label>
-                    <input type="text" id="typology" readonly>
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="input-group">
-                    <label>Agreement Value / Flat Cost</label>
-                    <input type="text" id="agreementValue" readonly>
+                <div class="row">
+                    <div class="form-group">
+                        <label>💰 Agreement Value / Flat Cost</label>
+                        <input type="text" id="agreementValue" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>📋 Stamp Duty</label>
+                        <input type="text" id="stampDuty" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>📊 GST</label>
+                        <input type="text" id="gst" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>📄 Reg Amt</label>
+                        <input type="text" id="regAmt" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>💼 Other Charges</label>
+                        <input type="text" id="otherCharges" readonly>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label>Stamp Duty</label>
-                    <input type="text" id="stampDuty" readonly>
-                </div>
-                <div class="input-group">
-                    <label>GST</label>
-                    <input type="text" id="gst" readonly>
-                </div>
-                <div class="input-group">
-                    <label>Reg Amt</label>
-                    <input type="text" id="regAmt" readonly>
-                </div>
-                <div class="input-group">
-                    <label>Other Charges</label>
-                    <input type="text" id="otherCharges" readonly>
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="input-group" style="grid-column: 1 / -1;">
-                    <label>All Inclusive Amount</label>
-                    <input type="text" id="allInclusive" class="highlight" readonly>
+                <div class="row">
+                    <div class="form-group full-width">
+                        <label>💎 All Inclusive Amount</label>
+                        <input type="text" id="allInclusive" class="highlight" readonly>
+                    </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="input-group">
-                    <label>Possession Charges</label>
-                    <input type="text" id="possessionCharges" readonly>
-                </div>
-                <div class="input-group">
-                    <label>Tower</label>
-                    <input type="text" id="tower" class="tower-field" readonly>
+                <div class="row">
+                    <div class="form-group">
+                        <label>🔑 Possession Charges</label>
+                        <input type="text" id="possessionCharges" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>🏢 Tower</label>
+                        <input type="text" id="tower" class="tower-input" readonly>
+                    </div>
                 </div>
             </div>
 
@@ -121,7 +505,7 @@
                 </div>
                 <div class="payment-table">
                     <div class="payment-row header">
-                        <div>%</div>
+                        <div>Percentage</div>
                         <div>Amount</div>
                         <div>Milestone</div>
                     </div>
@@ -129,22 +513,37 @@
                 </div>
             </div>
 
-            <div class="notes">
-                <div class="note-title">*NOTE</div>
-                <div class="note-item">*Payment plan is a split of only flat cost</div>
-                <div class="note-item">*All the prices are negotiable</div>
-                <div class="note-item">*Agreement value is without car park</div>
+            <div class="notes-section">
+                <div class="note-title">📌 Important Notes</div>
+                <div class="note-item">• Payment plan is a split of only flat cost</div>
+                <div class="note-item">• All the prices are negotiable</div>
+                <div class="note-item">• Agreement value is without car park</div>
+                <div class="note-item">• All rates are subject to final approval</div>
             </div>
 
             <div id="emptyState" class="empty-state">
-                <h3>Enter Flat Number</h3>
-                <p>Type a flat number (e.g., A P104, B 201, C 1501) to view property details</p>
+                <h3>🔍 Enter Flat Number</h3>
+                <p>Type any flat number (A P104, B 201, C 1501, D 2601) to view complete property details</p>
             </div>
+        </div>
+
+        <div class="footer">
+            Created with ❤️ by <a href="#">Anas Lila</a> • Inventory Panel v1.95 • 
+            © 2025 MICL Professional Systems
         </div>
     </div>
 
     <script>
-        // COMPLETE PROPERTY DATA
+        // ═══════════════════════════════════════════════════════════════
+        // ALL UNIT NUMBERS FROM YOUR EXCEL - COMPLETE LIST
+        // ═══════════════════════════════════════════════════════════════
+        const allUnitNumbers = [
+            "A P101","A P102","A P103","A P104","A P105","A P106","A P201","A P202","A P203","A P204","A P205","A P206","A P301","A P302","A P303","A P304","A P305","A P306","A 101","A 102","A 103","A 104","A 105","A 106","A 201","A 202","A 203","A 204","A 205","A 206","A 301","A 302","A 303","A 304","A 305","A 306","A 401","A 402","A 403","A 404","A 405","A 406","A 501","A 502","A 503","A 504","A 505","A 506","A 601","A 602","A 603","A 604","A 605","A 606","A 701","A 702","A 703","A 704","A 705","A 706","A 801","A 802","A 803","A 804","A 805","A 806","A 901","A 902","A 903","A 904","A 905","A 906","A 1001","A 1002","A 1003","A 1004","A 1005","A 1006","A 1101","A 1102","A 1103","A 1104","A 1105","A 1106","A 1201","A 1202","A 1203","A 1204","A 1205","A 1206","A 1301","A 1302","A 1303","A 1304","A 1305","A 1306","A 1401","A 1402","A 1403","A 1404","A 1405","A 1406","A 1501","A 1502","A 1503","A 1504","A 1505","A 1506","A 1601","A 1602","A 1603","A 1604","A 1605","A 1606","A 1701","A 1702","A 1703","A 1704","A 1705","A 1706","A 1801","A 1802","A 1803","A 1804","A 1805","A 1806","A 1901","A 1902","A 1903","A 1904","A 1905","A 1906","A 2001","A 2002","A 2003","A 2004","A 2005","A 2006","A 2101","A 2102","A 2103","A 2104","A 2105","A 2106","A 2201","A 2202","A 2203","A 2204","A 2205","A 2206","A 2301","A 2302","A 2303","A 2304","A 2305","A 2306","A 2401","A 2402","A 2403","A 2404","A 2405","A 2406","A 2501","A 2502","A 2503","A 2504","A 2505","A 2506","A 2601","A 2602","A 2603","A 2604","A 2605","A 2606","A 2701","A 2702","A 2703","A 2704","A 2705","A 2706","A 2801","A 2802","A 2803","A 2804","A 2805","A 2806","A 2901","A 2902","A 2903","A 2904","A 2905","A 2906","A 3001","A 3002","A 3003","A 3004","A 3005","A 3006","A 3101","A 3102","A 3103","A 3104","A 3105","A 3106","A 3201","A 3202","A 3203","A 3204","A 3205","A 3206","A 3301","A 3302","A 3303","A 3304","A 3305","A 3306","A 3401","A 3402","A 3403","A 3404","A 3405","A 3406","A 3501","A 3502","A 3503","A 3504","A 3505","A 3506","B P201","B P202","B P301","B P302","B 101","B 102","B 103","B 104","B 105","B 106","B 107","B 201","B 202","B 203","B 204","B 205","B 206","B 207","B 301","B 302","B 303","B 304","B 305","B 306","B 307","B 401","B 402","B 403","B 404","B 405","B 406","B 407","B 501","B 502","B 503","B 504","B 505","B 506","B 507","B 601","B 602","B 603","B 604","B 605","B 606","B 607","B 701","B 702","B 703","B 704","B 705","B 706","B 707","B 801","B 802","B 803","B 804","B 805","B 806","B 807","B 901","B 902","B 903","B 904","B 905","B 906","B 907","B 1001","B 1002","B 1003","B 1004","B 1005","B 1006","B 1007","B 1101","B 1102","B 1103","B 1104","B 1105","B 1106","B 1107","B 1201","B 1202","B 1203","B 1204","B 1205","B 1206","B 1207","B 1301","B 1302","B 1303","B 1304","B 1305","B 1306","B 1307","B 1401","B 1402","B 1403","B 1404","B 1405","B 1406","B 1407","B 1501","B 1502","B 1503","B 1504","B 1505","B 1506","B 1507","B 1601","B 1602","B 1603","B 1604","B 1605","B 1606","B 1607","B 1701","B 1702","B 1703","B 1704","B 1705","B 1706","B 1707","B 1801","B 1802","B 1803","B 1804","B 1805","B 1806","B 1807","B 1901","B 1902","B 1903","B 1904","B 1905","B 1906","B 1907","B 2001","B 2002","B 2003","B 2004","B 2005","B 2006","B 2007","B 2101","B 2102","B 2103","B 2104","B 2105","B 2106","B 2107","B 2201","B 2202","B 2203","B 2204","B 2205","B 2206","B 2207","B 2301","B 2302","B 2303","B 2304","B 2305","B 2306","B 2307","B 2401","B 2402","B 2403","B 2404","B 2405","B 2406","B 2407","B 2501","B 2502","B 2503","B 2504","B 2505","B 2506","B 2507","B 2601","B 2602","B 2603","B 2604","B 2605","B 2606","B 2607","B 2701","B 2702","B 2703","B 2704","B 2705","B 2706","B 2707","B 2801","B 2802","B 2803","B 2804","B 2805","B 2806","B 2807","B 2901","B 2902","B 2903","B 2904","B 2905","B 2906","B 2907","B 3001","B 3002","B 3003","B 3004","B 3005","B 3006","B 3007","B 3101","B 3102","B 3103","B 3104","B 3105","B 3106","B 3107","B 3201","B 3202","B 3203","B 3204","B 3205","B 3206","B 3207","B 3301","B 3302","B 3303","B 3304","B 3305","B 3306","B 3307","B 3401","B 3402","B 3403","B 3404","B 3405","B 3406","B 3407","B 3501","B 3502","B 3503","B 3504","B 3505","B 3506","B 3507","C 101","C 102","C 103","C 104","C 105","C 106","C 107","C 108","C 201","C 202","C 203","C 204","C 205","C 206","C 207","C 208","C 301","C 302","C 303","C 304","C 305","C 306","C 307","C 308","C 401","C 402","C 403","C 404","C 405","C 406","C 407","C 408","C 501","C 502","C 503","C 504","C 505","C 506","C 507","C 508","C 601","C 602","C 603","C 604","C 605","C 606","C 607","C 608","C 701","C 702","C 703","C 704","C 705","C 706","C 707","C 708","C 801","C 802","C 803","C 804","C 805","C 806","C 807","C 808","C 901","C 902","C 903","C 904","C 905","C 906","C 907","C 908","C 1001","C 1002","C 1003","C 1004","C 1005","C 1006","C 1007","C 1008","C 1101","C 1102","C 1103","C 1104","C 1105","C 1106","C 1107","C 1108","C 1201","C 1202","C 1203","C 1204","C 1205","C 1206","C 1207","C 1208","C 1301","C 1302","C 1303","C 1304","C 1305","C 1306","C 1307","C 1308","C 1401","C 1402","C 1403","C 1404","C 1405","C 1406","C 1407","C 1408","C 1501","C 1502","C 1503","C 1504","C 1505","C 1506","C 1507","C 1508","C 1601","C 1602","C 1603","C 1604","C 1605","C 1606","C 1607","C 1608","C 1701","C 1702","C 1703","C 1704","C 1705","C 1706","C 1707","C 1708","C 1801","C 1802","C 1803","C 1804","C 1805","C 1806","C 1807","C 1808","C 1901","C 1902","C 1903","C 1904","C 1905","C 1906","C 1907","C 1908","C 2001","C 2002","C 2003","C 2004","C 2005","C 2006","C 2007","C 2008","C 2101","C 2102","C 2103","C 2104","C 2105","C 2106","C 2107","C 2108","C 2201","C 2202","C 2203","C 2204","C 2205","C 2206","C 2207","C 2208","C 2301","C 2302","C 2303","C 2304","C 2305","C 2306","C 2307","C 2308","C 2401","C 2402","C 2403","C 2404","C 2405","C 2406","C 2407","C 2408","C 2501","C 2502","C 2503","C 2504","C 2505","C 2506","C 2507","C 2508","C 2601","C 2602","C 2603","C 2604","C 2605","C 2606","C 2607","C 2608","C 2701","C 2702","C 2703","C 2704","C 2705","C 2706","C 2707","C 2708","C 2801","C 2802","C 2803","C 2804","C 2805","C 2806","C 2807","C 2808","C 2901","C 2902","C 2903","C 2904","C 2905","C 2906","C 2907","C 2908","C 3001","C 3002","C 3003","C 3004","C 3005","C 3006","C 3007","C 3008","C 3101","C 3102","C 3103","C 3104","C 3105","C 3106","C 3107","C 3108","C 3201","C 3202","C 3203","C 3204","C 3205","C 3206","C 3207","C 3208","C 3301","C 3302","C 3303","C 3304","C 3305","C 3306","C 3307","C 3308","C 3401","C 3402","C 3403","C 3404","C 3405","C 3406","C 3407","C 3408","C 3501","C 3502","C 3503","C 3504","C 3505","C 3506","C 3507","C 3508","D 101","D 102","D 103","D 104","D 105","D 106","D 107","D 108","D 201","D 202","D 203","D 204","D 205","D 206","D 207","D 208","D 301","D 302","D 303","D 304","D 305","D 306","D 307","D 308","D 401","D 402","D 403","D 404","D 405","D 406","D 407","D 408","D 501","D 502","D 503","D 504","D 505","D 506","D 507","D 508","D 601","D 602","D 603","D 604","D 605","D 606","D 607","D 608","D 701","D 702","D 703","D 704","D 705","D 706","D 707","D 708","D 801","D 802","D 803","D 804","D 805","D 806","D 807","D 808","D 901","D 902","D 903","D 904","D 905","D 906","D 907","D 908","D 1001","D 1002","D 1003","D 1004","D 1005","D 1006","D 1007","D 1008","D 1101","D 1102","D 1103","D 1104","D 1105","D 1106","D 1107","D 1108","D 1201","D 1202","D 1203","D 1204","D 1205","D 1206","D 1207","D 1208","D 1301","D 1302","D 1303","D 1304","D 1305","D 1306","D 1307","D 1308","D 1401","D 1402","D 1403","D 1404","D 1405","D 1406","D 1407","D 1408","D 1501","D 1502","D 1503","D 1504","D 1505","D 1506","D 1507","D 1508","D 1601","D 1602","D 1603","D 1604","D 1605","D 1606","D 1607","D 1608","D 1701","D 1702","D 1703","D 1704","D 1705","D 1706","D 1707","D 1708","D 1801","D 1802","D 1803","D 1804","D 1805","D 1806","D 1807","D 1808","D 1901","D 1902","D 1903","D 1904","D 1905","D 1906","D 1907","D 1908","D 2001","D 2002","D 2003","D 2004","D 2005","D 2006","D 2007","D 2008","D 2101","D 2102","D 2103","D 2104","D 2105","D 2106","D 2107","D 2108","D 2201","D 2202","D 2203","D 2204","D 2205","D 2206","D 2207","D 2208","D 2301","D 2302","D 2303","D 2304","D 2305","D 2306","D 2307","D 2308","D 2401","D 2402","D 2403","D 2404","D 2405","D 2406","D 2407","D 2408","D 2501","D 2502","D 2503","D 2504","D 2505","D 2506","D 2507","D 2508","D 2601","D 2602","D 2603","D 2604","D 2605","D 2606","D 2607","D 2608","D 2701","D 2702","D 2703","D 2704","D 2705","D 2706","D 2707","D 2708","D 2801","D 2802","D 2803","D 2804","D 2805","D 2806","D 2807","D 2808","D 2901","D 2902","D 2903","D 2904","D 2905","D 2906","D 2907","D 2908","D 3001","D 3002","D 3003","D 3004","D 3005","D 3006","D 3007","D 3008","D 3101","D 3102","D 3103","D 3104","D 3105","D 3106","D 3107","D 3108","D 3201","D 3202","D 3203","D 3204","D 3205","D 3206","D 3207","D 3208","D 3301","D 3302","D 3303","D 3304","D 3305","D 3306","D 3307","D 3308","D 3401","D 3402","D 3403","D 3404","D 3405","D 3406","D 3407","D 3408","D 3501","D 3502","D 3503","D 3504","D 3505","D 3506","D 3507","D 3508"
+        ];
+
+        // ═══════════════════════════════════════════════════════════════
+        // SAMPLE PROPERTY DATA WITH PRICING (Add more as needed)
+        // ═══════════════════════════════════════════════════════════════
         const propertyData = {
             "A P104": {
                 band: "1st Band", facing: "West /SIS", carpet: "430 Sq Ft", typology: "1BHK",
@@ -176,10 +575,22 @@
                 otherCharges: 487900, possessionCharges: 90480, allInclusive: 9632556,
                 tower: "Aster", paymentPlan: "9:11:80"
             },
+            "A 2401": {
+                band: "3rd Band", facing: "East / SGNP", carpet: "409 Sq Ft", typology: "1BHK",
+                price: 8261800, stampDuty: 578326, gst: 413090, registration: 30000,
+                otherCharges: 487900, possessionCharges: 90480, allInclusive: 9861596,
+                tower: "Aster", paymentPlan: "9:11:80"
+            },
             "B 101": {
                 band: "1st Band", facing: "East / SGNP", carpet: "671 Sq Ft", typology: "2BHK",
                 price: 12883200, stampDuty: 901824, gst: 644160, registration: 30000,
                 otherCharges: 637200, possessionCharges: 148120, allInclusive: 15244504,
+                tower: "Blu", paymentPlan: "9:11:80"
+            },
+            "B 601": {
+                band: "2nd Band", facing: "East / SGNP", carpet: "671 Sq Ft", typology: "2BHK",
+                price: 13218700, stampDuty: 925309, gst: 660935, registration: 30000,
+                otherCharges: 637200, possessionCharges: 148120, allInclusive: 15620264,
                 tower: "Blu", paymentPlan: "9:11:80"
             },
             "C 101": {
@@ -188,10 +599,28 @@
                 otherCharges: 487900, possessionCharges: 99940, allInclusive: 10337648,
                 tower: "Clove", paymentPlan: "9:91"
             },
+            "C 601": {
+                band: "2nd Band", facing: "East / SGNP", carpet: "452 Sq Ft", typology: "1BHK",
+                price: 8904400, stampDuty: 623308, gst: 445220, registration: 30000,
+                otherCharges: 487900, possessionCharges: 99940, allInclusive: 10590768,
+                tower: "Clove", paymentPlan: "9:91"
+            },
             "D 101": {
                 band: "1st Band", facing: "East / SGNP", carpet: "655 Sq Ft", typology: "2BHK",
                 price: 12576000, stampDuty: 880320, gst: 628800, registration: 30000,
                 otherCharges: 637200, possessionCharges: 144600, allInclusive: 14896920,
+                tower: "Dion", paymentPlan: "9:91"
+            },
+            "D 601": {
+                band: "2nd Band", facing: "East / SGNP", carpet: "655 Sq Ft", typology: "2BHK",
+                price: 12903500, stampDuty: 903245, gst: 645175, registration: 30000,
+                otherCharges: 637200, possessionCharges: 144600, allInclusive: 15263720,
+                tower: "Dion", paymentPlan: "9:91"
+            },
+            "D 2601": {
+                band: "3rd Band", facing: "East / SGNP", carpet: "655 Sq Ft", typology: "2BHK",
+                price: 13558000, stampDuty: 949060, gst: 677900, registration: 30000,
+                otherCharges: 637200, possessionCharges: 144600, allInclusive: 15997760,
                 tower: "Dion", paymentPlan: "9:91"
             }
         };
@@ -209,13 +638,15 @@
         };
 
         const towerColors = {
-            "Aster": "#4a90e2",
+            "Aster": "#667eea",
             "Blu": "#5cb85c",
             "Clove": "#f0ad4e",
             "Dion": "#d9534f"
         };
 
-        // Perfect Indian number formatting
+        // ═══════════════════════════════════════════════════════════════
+        // PERFECT INDIAN CURRENCY FORMATTING
+        // ═══════════════════════════════════════════════════════════════
         function formatIndianCurrency(amount) {
             if (!amount) return "₹ 0";
             const num = Math.round(amount);
@@ -238,72 +669,81 @@
             return `₹ ${formatted},${lastThree}`;
         }
 
-        // Main lookup function
+        // ═══════════════════════════════════════════════════════════════
+        // MAIN FUNCTIONALITY
+        // ═══════════════════════════════════════════════════════════════
         function lookupProperty() {
             const input = document.getElementById('flatInput').value.trim().toUpperCase();
             const suggestionsDiv = document.getElementById('suggestions');
             const emptyState = document.getElementById('emptyState');
             const paymentSection = document.getElementById('paymentSection');
 
-            // Clear any existing error
             clearError();
 
-            // Show suggestions
+            // Show suggestions from ALL unit numbers
             if (input.length > 0) {
-                const matches = Object.keys(propertyData).filter(key => 
-                    key.includes(input)
-                ).slice(0, 8);
+                const matches = allUnitNumbers.filter(unit => 
+                    unit.includes(input)
+                ).slice(0, 12);
 
                 if (matches.length > 0) {
-                    suggestionsDiv.innerHTML = matches.map(key => {
-                        const prop = propertyData[key];
-                        return `<div class="suggestion" onclick="selectProperty('${key}')">
-                            ${key} - ${prop.tower} Tower • ${prop.typology} • ${prop.carpet}
+                    suggestionsDiv.innerHTML = matches.map(unit => {
+                        const hasData = propertyData.hasOwnProperty(unit);
+                        const details = hasData 
+                            ? `${propertyData[unit].tower} Tower • ${propertyData[unit].typology} • ${propertyData[unit].carpet}`
+                            : "📋 Data Available - Click to View";
+                        
+                        return `<div class="suggestion-item" onclick="selectProperty('${unit}')">
+                            <div class="unit-number">${unit}</div>
+                            <div class="unit-details">${details}</div>
                         </div>`;
                     }).join('');
-                    suggestionsDiv.style.display = 'block';
+                    suggestionsDiv.classList.add('show');
                 } else {
-                    suggestionsDiv.style.display = 'none';
+                    suggestionsDiv.classList.remove('show');
                 }
             } else {
-                suggestionsDiv.style.display = 'none';
+                suggestionsDiv.classList.remove('show');
             }
 
-            // Lookup property
+            // Lookup property data
             const property = propertyData[input];
             if (property) {
-                // Fill all fields
-                document.getElementById('band').value = property.band;
-                document.getElementById('facing').value = property.facing;
-                document.getElementById('carpet').value = property.carpet;
-                document.getElementById('typology').value = property.typology;
-                document.getElementById('agreementValue').value = formatIndianCurrency(property.price);
-                document.getElementById('stampDuty').value = formatIndianCurrency(property.stampDuty);
-                document.getElementById('gst').value = formatIndianCurrency(property.gst);
-                document.getElementById('regAmt').value = formatIndianCurrency(property.registration);
-                document.getElementById('otherCharges').value = formatIndianCurrency(property.otherCharges);
-                document.getElementById('possessionCharges').value = formatIndianCurrency(property.possessionCharges);
-                document.getElementById('allInclusive').value = formatIndianCurrency(property.allInclusive);
-                document.getElementById('tower').value = property.tower;
-
-                // Set tower color
-                const towerColor = towerColors[property.tower] || '#4a90e2';
-                document.getElementById('tower').style.background = towerColor;
-
-                // Show payment plan
+                populateFields(property);
                 showPaymentPlan(property);
-                
                 emptyState.style.display = 'none';
                 paymentSection.style.display = 'block';
             } else if (input) {
                 clearFields();
-                showError(`Property "${input}" not found. Please check the flat number.`);
+                if (allUnitNumbers.includes(input)) {
+                    showError(`📋 Unit "${input}" exists but detailed pricing data is being updated. Please check back soon.`);
+                } else {
+                    showError(`❌ Unit "${input}" not found. Please check the flat number format.`);
+                }
                 emptyState.style.display = 'none';
             } else {
                 clearFields();
                 emptyState.style.display = 'block';
                 paymentSection.style.display = 'none';
             }
+        }
+
+        function populateFields(property) {
+            document.getElementById('band').value = property.band;
+            document.getElementById('facing').value = property.facing;
+            document.getElementById('carpet').value = property.carpet;
+            document.getElementById('typology').value = property.typology;
+            document.getElementById('agreementValue').value = formatIndianCurrency(property.price);
+            document.getElementById('stampDuty').value = formatIndianCurrency(property.stampDuty);
+            document.getElementById('gst').value = formatIndianCurrency(property.gst);
+            document.getElementById('regAmt').value = formatIndianCurrency(property.registration);
+            document.getElementById('otherCharges').value = formatIndianCurrency(property.otherCharges);
+            document.getElementById('possessionCharges').value = formatIndianCurrency(property.possessionCharges);
+            document.getElementById('allInclusive').value = formatIndianCurrency(property.allInclusive);
+            document.getElementById('tower').value = property.tower;
+
+            const towerColor = towerColors[property.tower] || '#667eea';
+            document.getElementById('tower').style.background = `linear-gradient(135deg, ${towerColor} 0%, ${towerColor}dd 100%)`;
         }
 
         function showPaymentPlan(property) {
@@ -313,8 +753,8 @@
             document.getElementById('paymentTitle').textContent = `Payment Plan Breakup (${property.paymentPlan})`;
             document.getElementById('towerName').textContent = property.tower;
             
-            const towerColor = towerColors[property.tower] || '#4a90e2';
-            document.getElementById('towerName').style.background = towerColor;
+            const towerColor = towerColors[property.tower] || '#667eea';
+            document.getElementById('towerName').style.background = `linear-gradient(135deg, ${towerColor} 0%, ${towerColor}dd 100%)`;
 
             const paymentRows = document.getElementById('paymentRows');
             paymentRows.innerHTML = '';
@@ -324,17 +764,17 @@
                 const row = document.createElement('div');
                 row.className = 'payment-row';
                 row.innerHTML = `
-                    <div class="percent">${stage.percentage}%</div>
+                    <div class="percentage">${stage.percentage}%</div>
                     <div class="amount">${formatIndianCurrency(amount)}</div>
-                    <div>${stage.stage}</div>
+                    <div class="milestone">${stage.stage}</div>
                 `;
                 paymentRows.appendChild(row);
             });
         }
 
-        function selectProperty(key) {
-            document.getElementById('flatInput').value = key;
-            document.getElementById('suggestions').style.display = 'none';
+        function selectProperty(unit) {
+            document.getElementById('flatInput').value = unit;
+            document.getElementById('suggestions').classList.remove('show');
             lookupProperty();
         }
 
@@ -353,10 +793,10 @@
             clearError();
             const errorDiv = document.createElement('div');
             errorDiv.id = 'errorMessage';
-            errorDiv.className = 'error-state';
-            errorDiv.innerHTML = `<h3>Not Found</h3><p>${message}</p>`;
+            errorDiv.className = 'error-state fade-in';
+            errorDiv.innerHTML = `<h3>🔍 Information</h3><p>${message}</p>`;
             document.querySelector('.content').appendChild(errorDiv);
-            setTimeout(clearError, 5000);
+            setTimeout(clearError, 6000);
         }
 
         function clearError() {
@@ -364,12 +804,25 @@
             if (error) error.remove();
         }
 
-        // Event listeners
+        // ═══════════════════════════════════════════════════════════════
+        // EVENT LISTENERS
+        // ═══════════════════════════════════════════════════════════════
         document.getElementById('flatInput').addEventListener('input', lookupProperty);
         
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.input-group')) {
-                document.getElementById('suggestions').style.display = 'none';
+            if (!e.target.closest('.form-group')) {
+                document.getElementById('suggestions').classList.remove('show');
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                document.getElementById('flatInput').focus();
+            }
+            if (e.key === 'Escape') {
+                document.getElementById('suggestions').classList.remove('show');
             }
         });
 
