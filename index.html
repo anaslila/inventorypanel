@@ -3,21 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory Panel v1.92</title>
-
+  <title>Inventory Panel v1.92 - MICL</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png" type="image/png">
+  <link rel="shortcut icon" href="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png" type="image/png">
+  
   <!-- CSS -->
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
-    <!-- ── Header ─────────────────────────────────── -->
+    <!-- ── Header with MICL Logo ─────────────────────────────── -->
     <div class="header">
       <div class="logo">
-        <span class="logo-icon">🏢</span>
+        <img src="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png" alt="MICL Logo" class="logo-img">
         <div>
           <h1>Inventory Panel v1.92</h1>
-          <p>Property Lookup System</p>
+          <p>MICL Property Lookup System</p>
         </div>
       </div>
       <div class="controls">
@@ -31,9 +35,9 @@
       <!-- Input block -->
       <div class="input-section">
         <div class="form-group">
-          <label>Flat / Inventory Number</label>
+          <label>Flat Number / Inventory Number</label>
           <div class="input-wrapper">
-            <input id="flatNumber" placeholder="Type (e.g. A P104)" autocomplete="off">
+            <input id="flatNumber" placeholder="Type flat number (e.g. A P104)" autocomplete="off">
             <div class="dropdown-icon">▼</div>
             <div id="suggestions" class="suggestions"></div>
           </div>
@@ -50,7 +54,7 @@
       <!-- Pricing -->
       <div class="pricing-section">
         <div class="form-row">
-          <div class="form-group"><label>Agreement Value</label><input id="agreementValue" readonly></div>
+          <div class="form-group"><label>Agreement Value / Flat Cost</label><input id="agreementValue" readonly></div>
           <div class="form-group"><label>Stamp Duty</label><input id="stampDuty" readonly></div>
           <div class="form-group"><label>GST</label><input id="gst" readonly></div>
           <div class="form-group"><label>Reg Amt</label><input id="regAmt" readonly></div>
@@ -73,8 +77,8 @@
       <!-- Payment plan -->
       <div id="paymentSection" class="payment-section" style="display:none">
         <div class="payment-header">
-          <h3 id="paymentPlanTitle">Payment Plan</h3>
-          <div id="towerName" class="tower-name"></div>
+          <h3 id="paymentPlanTitle">Payment Plan Breakup (9:11:80)</h3>
+          <div id="towerName" class="tower-name">Aster</div>
         </div>
         <div class="payment-table">
           <div class="payment-row header">
@@ -87,15 +91,15 @@
       <!-- Notes -->
       <div class="notes-section">
         <div class="note-title">*NOTE</div>
-        <div class="note-item">Payment plan is split of flat cost only</div>
-        <div class="note-item">All prices are negotiable</div>
-        <div class="note-item">Agreement value shown is without car-park</div>
+        <div class="note-item">*Payment plan is a split of only flat cost</div>
+        <div class="note-item">*All the prices are negotiable</div>
+        <div class="note-item">*Agreement value is without car park</div>
       </div>
 
       <!-- Empty state -->
       <div id="emptyState" class="empty-state">
-        <h3>Start by typing a flat number</h3>
-        <p>e.g. A P104, B 101, C 601…</p>
+        <h3>Enter Flat Number</h3>
+        <p>Type a flat number (e.g., A P104, B 201, C 1501) to view property details</p>
       </div>
     </div>
   </div>
