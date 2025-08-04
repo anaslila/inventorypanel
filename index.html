@@ -3,255 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Residential Complex - Inventory Showcase</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Inventory Panel v1.92</title>
+    <link rel="stylesheet" href="lookup-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="nav-brand">
-                <h1>Premium Heights</h1>
-                <span>Luxury Living Redefined</span>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <span class="logo-icon">🏢</span>
+                <div>
+                    <h1>Inventory Panel v1.92</h1>
+                    <p>Property Lookup System</p>
+                </div>
             </div>
-            <nav class="nav-menu">
-                <a href="#home">Home</a>
-                <a href="#inventory">Inventory</a>
-                <a href="#towers">Towers</a>
-                <a href="#pricing">Pricing</a>
-                <a href="#contact">Contact</a>
-            </nav>
+            <div class="controls">
+                <button class="minimize-btn">—</button>
+                <button class="close-btn">✖</button>
+            </div>
         </div>
-    </header>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <div class="hero-content">
-            <h1>Find Your Perfect Home</h1>
-            <p>Explore our premium collection of 1BHK & 2BHK apartments across 4 magnificent towers</p>
-            <button class="cta-button" onclick="document.getElementById('filters').scrollIntoView()">
-                <i class="fas fa-search"></i> Explore Inventory
-            </button>
-        </div>
-        <div class="hero-stats">
-            <div class="stat">
-                <h3>4</h3>
-                <p>Premium Towers</p>
-            </div>
-            <div class="stat">
-                <h3>2000+</h3>
-                <p>Luxury Units</p>
-            </div>
-            <div class="stat">
-                <h3>3</h3>
-                <p>Price Bands</p>
-            </div>
-        </div>
-    </section>
+        <div class="content">
+            <!-- Input Section -->
+            <div class="input-section">
+                <div class="form-group">
+                    <label>Flat Number / Inventory Number</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="flatNumber" placeholder="Enter flat number (e.g., A P104)" 
+                               oninput="lookupProperty()" autocomplete="off">
+                        <div class="dropdown-icon">▼</div>
+                    </div>
+                    <div class="suggestions" id="suggestions"></div>
+                </div>
 
-    <!-- Filters Section -->
-    <section id="filters" class="filters-section">
-        <div class="container">
-            <h2>Find Your Ideal Property</h2>
-            <div class="filters">
-                <select id="towerFilter">
-                    <option value="">All Towers</option>
-                    <option value="Aster">Aster Tower</option>
-                    <option value="Blu">Blu Tower</option>
-                    <option value="Clove">Clove Tower</option>
-                    <option value="Dion">Dion Tower</option>
-                </select>
-                
-                <select id="typologyFilter">
-                    <option value="">All Types</option>
-                    <option value="1BHK">1 BHK</option>
-                    <option value="2BHK">2 BHK</option>
-                </select>
-                
-                <select id="bandFilter">
-                    <option value="">All Bands</option>
-                    <option value="1st Band">1st Band</option>
-                    <option value="2nd Band">2nd Band</option>
-                    <option value="3rd Band">3rd Band</option>
-                </select>
-                
-                <select id="facingFilter">
-                    <option value="">All Facing</option>
-                    <option value="East / SGNP">East / SGNP</option>
-                    <option value="West /SIS">West / SIS</option>
-                </select>
-                
-                <div class="price-range">
-                    <label>Price Range (₹)</label>
-                    <input type="range" id="priceRange" min="7000000" max="16000000" value="16000000">
-                    <span id="priceDisplay">Up to ₹1.6 Cr</span>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Band</label>
+                        <input type="text" id="band" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Facing</label>
+                        <input type="text" id="facing" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>RERA Carpet</label>
+                        <input type="text" id="carpet" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Typology</label>
+                        <input type="text" id="typology" readonly>
+                    </div>
                 </div>
-                
-                <button class="filter-btn" onclick="applyFilters()">
-                    <i class="fas fa-filter"></i> Apply Filters
-                </button>
-                <button class="reset-btn" onclick="resetFilters()">
-                    <i class="fas fa-undo"></i> Reset
-                </button>
             </div>
-        </div>
-    </section>
 
-    <!-- Inventory Grid -->
-    <section id="inventory" class="inventory-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Available Properties</h2>
-                <div class="view-toggle">
-                    <button class="view-btn active" onclick="switchView('grid')">
-                        <i class="fas fa-th"></i> Grid
-                    </button>
-                    <button class="view-btn" onclick="switchView('list')">
-                        <i class="fas fa-list"></i> List
-                    </button>
+            <!-- Pricing Section -->
+            <div class="pricing-section">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Agreement Value / Flat Cost</label>
+                        <input type="text" id="agreementValue" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Stamp Duty</label>
+                        <input type="text" id="stampDuty" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>GST</label>
+                        <input type="text" id="gst" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Reg Amt</label>
+                        <input type="text" id="regAmt" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Other Charges</label>
+                        <input type="text" id="otherCharges" readonly>
+                    </div>
                 </div>
-            </div>
-            <div id="propertyGrid" class="property-grid">
-                <!-- Properties will be loaded here by JavaScript -->
-            </div>
-            <div class="load-more">
-                <button id="loadMoreBtn" onclick="loadMoreProperties()">Load More Properties</button>
-            </div>
-        </div>
-    </section>
 
-    <!-- Towers Section -->
-    <section id="towers" class="towers-section">
-        <div class="container">
-            <h2>Our Premium Towers</h2>
-            <div class="towers-grid">
-                <div class="tower-card">
-                    <div class="tower-icon">🏢</div>
-                    <h3>Aster Tower</h3>
-                    <p>Premium 1BHK & 2BHK apartments with garden views</p>
-                    <div class="tower-stats">
-                        <span>35 Floors</span>
-                        <span>420+ Units</span>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>All Inclusive Amount</label>
+                        <input type="text" id="allInclusive" readonly class="highlight">
                     </div>
                 </div>
-                <div class="tower-card">
-                    <div class="tower-icon">🌟</div>
-                    <h3>Blu Tower</h3>
-                    <p>Modern living spaces with panoramic city views</p>
-                    <div class="tower-stats">
-                        <span>35 Floors</span>
-                        <span>490+ Units</span>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Possession Charges</label>
+                        <input type="text" id="possessionCharges" readonly>
                     </div>
-                </div>
-                <div class="tower-card">
-                    <div class="tower-icon">🏛️</div>
-                    <h3>Clove Tower</h3>
-                    <p>Elegant 1BHK apartments with premium amenities</p>
-                    <div class="tower-stats">
-                        <span>35 Floors</span>
-                        <span>560+ Units</span>
-                    </div>
-                </div>
-                <div class="tower-card">
-                    <div class="tower-icon">💎</div>
-                    <h3>Dion Tower</h3>
-                    <p>Luxurious 2BHK residences with spacious layouts</p>
-                    <div class="tower-stats">
-                        <span>35 Floors</span>
-                        <span>560+ Units</span>
+                    <div class="form-group">
+                        <label>Tower</label>
+                        <input type="text" id="tower" readonly class="tower-input">
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Contact Section -->
-    <section id="contact" class="contact-section">
-        <div class="container">
-            <h2>Get In Touch</h2>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <div class="contact-item">
-                        <i class="fas fa-phone"></i>
-                        <div>
-                            <h4>Call Us</h4>
-                            <p>+91 98765 43210</p>
-                        </div>
+            <!-- Payment Plan Section -->
+            <div class="payment-section" id="paymentSection" style="display: none;">
+                <div class="payment-header">
+                    <h3 id="paymentPlanTitle">Payment Plan Breakup (9:11:80)</h3>
+                    <div class="tower-name" id="towerName">Aster</div>
+                </div>
+                <div class="payment-table">
+                    <div class="payment-row header">
+                        <div class="percentage">%</div>
+                        <div class="amount">Amount</div>
+                        <div class="milestone">Milestone</div>
                     </div>
-                    <div class="contact-item">
-                        <i class="fas fa-envelope"></i>
-                        <div>
-                            <h4>Email Us</h4>
-                            <p>info@premiumheights.com</p>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <div>
-                            <h4>Visit Us</h4>
-                            <p>Sales Office: Premium Heights Complex</p>
-                        </div>
+                    <div id="paymentBreakdown">
+                        <!-- Payment breakdown will be populated here -->
                     </div>
                 </div>
-                <form class="contact-form" onsubmit="submitInquiry(event)">
-                    <h3>Request Information</h3>
-                    <input type="text" placeholder="Your Name" required>
-                    <input type="email" placeholder="Your Email" required>
-                    <input type="tel" placeholder="Your Phone" required>
-                    <select required>
-                        <option value="">Interested in...</option>
-                        <option value="1BHK">1 BHK Apartment</option>
-                        <option value="2BHK">2 BHK Apartment</option>
-                        <option value="investment">Investment Options</option>
-                        <option value="visit">Schedule Site Visit</option>
-                    </select>
-                    <textarea placeholder="Your Message" rows="4"></textarea>
-                    <button type="submit">Send Inquiry</button>
-                </form>
             </div>
-        </div>
-    </section>
 
-    <!-- Property Detail Modal -->
-    <div id="propertyModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <div id="modalContent">
-                <!-- Property details will be loaded here -->
+            <!-- Notes Section -->
+            <div class="notes-section">
+                <div class="note-title">*NOTE</div>
+                <div class="note-item">*Payment plan is a split of only flat cost</div>
+                <div class="note-item">*All the prices are negotiable</div>
+                <div class="note-item">*Agreement value is without car park</div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState">
+                <h3>Enter Flat Number</h3>
+                <p>Type a flat number (e.g., A P104, B 201, C 1501) to view property details</p>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Premium Heights</h3>
-                    <p>Your dream home awaits in our premium residential complex.</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <a href="#home">Home</a>
-                    <a href="#inventory">Inventory</a>
-                    <a href="#towers">Towers</a>
-                    <a href="#contact">Contact</a>
-                </div>
-                <div class="footer-section">
-                    <h4>Contact Info</h4>
-                    <p><i class="fas fa-phone"></i> +91 98765 43210</p>
-                    <p><i class="fas fa-envelope"></i> info@premiumheights.com</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Premium Heights. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script src="data.js"></script>
-    <script src="script.js"></script>
+    <script src="inventory-data.js"></script>
+    <script src="lookup-script.js"></script>
 </body>
 </html>
