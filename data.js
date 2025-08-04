@@ -230,4 +230,180 @@ const inventoryData = {
         unitNumber: "C 101",
         floorNumber: "1",
         band: "1st Band",
-        facing: "East / SGN
+        facing: "East / SGNP",
+        carpetArea: "452 Sq Ft",
+        typology: "1BHK",
+        price: 8678400,
+        stampDuty: 607488,
+        gst: 433920,
+        registration: 30000,
+        otherCharges: 487900,
+        possessionCharges: 99940,
+        allInclusiveAmount: 10337648,
+        tower: "Clove",
+        paymentPlan: "(9:91)"
+    },
+    "C 102": {
+        unitNumber: "C 102",
+        floorNumber: "1",
+        band: "1st Band",
+        facing: "East / SGNP",
+        carpetArea: "452 Sq Ft",
+        typology: "1BHK",
+        price: 8678400,
+        stampDuty: 607488,
+        gst: 433920,
+        registration: 30000,
+        otherCharges: 487900,
+        possessionCharges: 99940,
+        allInclusiveAmount: 10337648,
+        tower: "Clove",
+        paymentPlan: "(9:91)"
+    },
+    "C 601": {
+        unitNumber: "C 601",
+        floorNumber: "6",
+        band: "2nd Band",
+        facing: "East / SGNP",
+        carpetArea: "452 Sq Ft",
+        typology: "1BHK",
+        price: 8904400,
+        stampDuty: 623308,
+        gst: 445220,
+        registration: 30000,
+        otherCharges: 487900,
+        possessionCharges: 99940,
+        allInclusiveAmount: 10590768,
+        tower: "Clove",
+        paymentPlan: "(9:91)"
+    },
+    "C 2401": {
+        unitNumber: "C 2401",
+        floorNumber: "24",
+        band: "3rd Band",
+        facing: "East / SGNP",
+        carpetArea: "452 Sq Ft",
+        typology: "1BHK",
+        price: 9130400,
+        stampDuty: 639128,
+        gst: 456520,
+        registration: 30000,
+        otherCharges: 487900,
+        possessionCharges: 99940,
+        allInclusiveAmount: 10843888,
+        tower: "Clove",
+        paymentPlan: "(9:91)"
+    },
+
+    // Dion Tower Properties
+    "D 101": {
+        unitNumber: "D 101",
+        floorNumber: "1",
+        band: "1st Band",
+        facing: "East / SGNP",
+        carpetArea: "655 Sq Ft",
+        typology: "2BHK",
+        price: 12576000,
+        stampDuty: 880320,
+        gst: 628800,
+        registration: 30000,
+        otherCharges: 637200,
+        possessionCharges: 144600,
+        allInclusiveAmount: 14896920,
+        tower: "Dion",
+        paymentPlan: "(9:91)"
+    },
+    "D 102": {
+        unitNumber: "D 102",
+        floorNumber: "1",
+        band: "1st Band",
+        facing: "East / SGNP",
+        carpetArea: "655 Sq Ft",
+        typology: "2BHK",
+        price: 12576000,
+        stampDuty: 880320,
+        gst: 628800,
+        registration: 30000,
+        otherCharges: 637200,
+        possessionCharges: 144600,
+        allInclusiveAmount: 14896920,
+        tower: "Dion",
+        paymentPlan: "(9:91)"
+    },
+    "D 601": {
+        unitNumber: "D 601",
+        floorNumber: "6",
+        band: "2nd Band",
+        facing: "East / SGNP",
+        carpetArea: "655 Sq Ft",
+        typology: "2BHK",
+        price: 12903500,
+        stampDuty: 903245,
+        gst: 645175,
+        registration: 30000,
+        otherCharges: 637200,
+        possessionCharges: 144600,
+        allInclusiveAmount: 15263720,
+        tower: "Dion",
+        paymentPlan: "(9:91)"
+    },
+    "D 2401": {
+        unitNumber: "D 2401",
+        floorNumber: "24",
+        band: "3rd Band",
+        facing: "East / SGNP",
+        carpetArea: "655 Sq Ft",
+        typology: "2BHK",
+        price: 13231000,
+        stampDuty: 926170,
+        gst: 661550,
+        registration: 30000,
+        otherCharges: 637200,
+        possessionCharges: 144600,
+        allInclusiveAmount: 15630520,
+        tower: "Dion",
+        paymentPlan: "(9:91)"
+    }
+};
+
+// Payment plan configurations
+const paymentPlans = {
+    "(9:11:80)": {
+        name: "(9:11:80)",
+        stages: [
+            { stage: "On Booking", percentage: 9 },
+            { stage: "On Completion of Terrace", percentage: 11 },
+            { stage: "On Possession", percentage: 80 }
+        ]
+    },
+    "(9:91)": {
+        name: "(9:91)", 
+        stages: [
+            { stage: "On Booking", percentage: 9 },
+            { stage: "On Occupancy Certificate", percentage: 91 }
+        ]
+    }
+};
+
+// Tower color mapping
+const towerColors = {
+    "Aster": "#4a90e2",
+    "Blu": "#5cb85c",
+    "Clove": "#f0ad4e",
+    "Dion": "#d9534f"
+};
+
+// Get all unit numbers for autocomplete
+const getAllUnitNumbers = () => {
+    return Object.keys(inventoryData);
+};
+
+// Search function for autocomplete
+const searchUnits = (query) => {
+    if (!query) return [];
+    
+    const units = Object.keys(inventoryData);
+    return units.filter(unit => 
+        unit.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, 10); // Limit to 10 suggestions
+};
