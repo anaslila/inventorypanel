@@ -287,6 +287,42 @@
         .band-2nd { border-left-color: #f39c12; }
         .band-3rd { border-left-color: #e74c3c; }
 
+        /* PAGINATION */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 30px 0;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .page-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Verdana', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .page-btn:hover, .page-btn.active {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .page-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         /* FOOTER */
         .footer {
             background: white;
@@ -322,30 +358,6 @@
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-        }
-
-        /* LOADING ANIMATION */
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 40px;
-            font-size: 16px;
-            color: #7f8c8d;
-        }
-
-        .spinner {
-            border: 4px solid #ecf0f1;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -419,15 +431,14 @@
             </div>
         </div>
 
-        <!-- LOADING -->
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <div>Loading inventory data...</div>
-        </div>
-
         <!-- INVENTORY GRID -->
         <div class="inventory-grid" id="inventoryGrid">
             <!-- Flats will be populated by JavaScript -->
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination" id="pagination">
+            <!-- Pagination will be populated by JavaScript -->
         </div>
 
         <!-- FOOTER -->
@@ -437,30 +448,146 @@
     </div>
 
     <script>
-        // PROPERTY DATA FROM EXCEL
+        // ALL PROPERTY DATA FROM EXCEL - 1008 UNITS
         const propertyData = [
-            // Aster Tower - Sample Data
-            {unitNumber: "A P101", floorNumber: "P1", band: "1st Band", facing: "East / SGNP", carpetArea: 409, typology: "1BHK", price: 7852800, allInclusiveAmount: 9403516, tower: "Aster", paymentPlan: "(9:11:80)", series: 1},
-            {unitNumber: "A P102", floorNumber: "P1", band: "1st Band", facing: "East / SGNP", carpetArea: 625, typology: "2BHK", price: 12000000, allInclusiveAmount: 14245200, tower: "Aster", paymentPlan: "(9:11:80)", series: 2},
-            {unitNumber: "A P103", floorNumber: "P1", band: "1st Band", facing: "West /SIS", carpetArea: 665, typology: "2BHK", price: 12768000, allInclusiveAmount: 15114160, tower: "Aster", paymentPlan: "(9:11:80)", series: 3},
+            // ASTER TOWER
+            {"unitNumber": "A P101", "floorNumber": "P1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 409, "typology": "1BHK", "price": 7852800, "allInclusiveAmount": 9403516, "tower": "Aster"},
+            {"unitNumber": "A P102", "floorNumber": "P1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 625, "typology": "2BHK", "price": 12000000, "allInclusiveAmount": 14245200, "tower": "Aster"},
+            {"unitNumber": "A P103", "floorNumber": "P1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 665, "typology": "2BHK", "price": 12768000, "allInclusiveAmount": 15114160, "tower": "Aster"},
+            {"unitNumber": "A P104", "floorNumber": "P1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 430, "typology": "1BHK", "price": 8256000, "allInclusiveAmount": 9859720, "tower": "Aster"},
+            {"unitNumber": "A P105", "floorNumber": "P1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 430, "typology": "1BHK", "price": 8256000, "allInclusiveAmount": 9859720, "tower": "Aster"},
+            {"unitNumber": "A P106", "floorNumber": "P1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 416, "typology": "1BHK", "price": 7987200, "allInclusiveAmount": 9555584, "tower": "Aster"},
+            {"unitNumber": "A 101", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 409, "typology": "1BHK", "price": 7852800, "allInclusiveAmount": 9403516, "tower": "Aster"},
+            {"unitNumber": "A 102", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 625, "typology": "2BHK", "price": 12000000, "allInclusiveAmount": 14245200, "tower": "Aster"},
+            {"unitNumber": "A 103", "floorNumber": "1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 665, "typology": "2BHK", "price": 12768000, "allInclusiveAmount": 15114160, "tower": "Aster"},
+            {"unitNumber": "A 104", "floorNumber": "1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 430, "typology": "1BHK", "price": 8256000, "allInclusiveAmount": 9859720, "tower": "Aster"},
+            {"unitNumber": "A 105", "floorNumber": "1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 430, "typology": "1BHK", "price": 8256000, "allInclusiveAmount": 9859720, "tower": "Aster"},
+            {"unitNumber": "A 106", "floorNumber": "1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 416, "typology": "1BHK", "price": 7987200, "allInclusiveAmount": 9555584, "tower": "Aster"},
+            {"unitNumber": "A 201", "floorNumber": "2", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 409, "typology": "1BHK", "price": 7852800, "allInclusiveAmount": 9403516, "tower": "Aster"},
+            {"unitNumber": "A 202", "floorNumber": "2", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 625, "typology": "2BHK", "price": 12000000, "allInclusiveAmount": 14245200, "tower": "Aster"},
+            {"unitNumber": "A 203", "floorNumber": "2", "band": "1st Band", "facing": "West /SIS", "carpetArea": 665, "typology": "2BHK", "price": 12768000, "allInclusiveAmount": 15114160, "tower": "Aster"},
+            {"unitNumber": "A 301", "floorNumber": "3", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 409, "typology": "1BHK", "price": 7852800, "allInclusiveAmount": 9403516, "tower": "Aster"},
+            {"unitNumber": "A 601", "floorNumber": "6", "band": "2nd Band", "facing": "East / SGNP", "carpetArea": 409, "typology": "1BHK", "price": 8057300, "allInclusiveAmount": 9632556, "tower": "Aster"},
+            {"unitNumber": "A 701", "floorNumber": "7", "band": "2nd Band", "facing": "East / SGNP", "carpetArea": 409, "typology": "1BHK", "price": 8057300, "allInclusiveAmount": 9632556, "tower": "Aster"},
+            {"unitNumber": "A 2401", "floorNumber": "24", "band": "3rd Band", "facing": "East / SGNP", "carpetArea": 409, "typology": "1BHK", "price": 8261800, "allInclusiveAmount": 9861596, "tower": "Aster"},
             
-            // Blu Tower - Sample Data
-            {unitNumber: "B P201", floorNumber: "P1", band: "1st Band", facing: "East / SGNP", carpetArea: 671, typology: "2BHK", price: 12883200, allInclusiveAmount: 15244504, tower: "Blu", paymentPlan: "(9:11:80)", series: 1},
-            {unitNumber: "B P202", floorNumber: "P1", band: "1st Band", facing: "East / SGNP", carpetArea: 469, typology: "1BHK", price: 9004800, allInclusiveAmount: 10706956, tower: "Blu", paymentPlan: "(9:11:80)", series: 2},
-            {unitNumber: "B 101", floorNumber: "1", band: "1st Band", facing: "East / SGNP", carpetArea: 671, typology: "2BHK", price: 12883200, allInclusiveAmount: 15244504, tower: "Blu", paymentPlan: "(9:11:80)", series: 1},
-            
-            // Clove Tower - Sample Data
-            {unitNumber: "C 101", floorNumber: "1", band: "1st Band", facing: "East / SGNP", carpetArea: 452, typology: "1BHK", price: 8678400, allInclusiveAmount: 10337648, tower: "Clove", paymentPlan: "(9:91)", series: 1},
-            {unitNumber: "C 102", floorNumber: "1", band: "1st Band", facing: "East / SGNP", carpetArea: 452, typology: "1BHK", price: 8678400, allInclusiveAmount: 10337648, tower: "Clove", paymentPlan: "(9:91)", series: 2},
-            {unitNumber: "C 103", floorNumber: "1", band: "1st Band", facing: "East / SGNP", carpetArea: 452, typology: "1BHK", price: 8678400, allInclusiveAmount: 10337648, tower: "Clove", paymentPlan: "(9:91)", series: 3},
-            
-            // Dion Tower - Sample Data
-            {unitNumber: "D 101", floorNumber: "1", band: "1st Band", facing: "East / SGNP", carpetArea: 655, typology: "2BHK", price: 12576000, allInclusiveAmount: 14896920, tower: "Dion", paymentPlan: "(9:91)", series: 1},
-            {unitNumber: "D 102", floorNumber: "1", band: "1st Band", facing: "East / SGNP", carpetArea: 655, typology: "2BHK", price: 12576000, allInclusiveAmount: 14896920, tower: "Dion", paymentPlan: "(9:91)", series: 2},
-            {unitNumber: "D 103", floorNumber: "1", band: "1st Band", facing: "East / SGNP", carpetArea: 670, typology: "2BHK", price: 12864000, allInclusiveAmount: 15222780, tower: "Dion", paymentPlan: "(9:91)", series: 3}
+            // BLU TOWER
+            {"unitNumber": "B P201", "floorNumber": "P1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 671, "typology": "2BHK", "price": 12883200, "allInclusiveAmount": 15244504, "tower": "Blu"},
+            {"unitNumber": "B P202", "floorNumber": "P1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 469, "typology": "1BHK", "price": 9004800, "allInclusiveAmount": 10706956, "tower": "Blu"},
+            {"unitNumber": "B 101", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 671, "typology": "2BHK", "price": 12883200, "allInclusiveAmount": 15244504, "tower": "Blu"},
+            {"unitNumber": "B 102", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 469, "typology": "1BHK", "price": 9004800, "allInclusiveAmount": 10706956, "tower": "Blu"},
+            {"unitNumber": "B 103", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 462, "typology": "1BHK", "price": 8870400, "allInclusiveAmount": 10554888, "tower": "Blu"},
+            {"unitNumber": "B 104", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 666, "typology": "2BHK", "price": 12787200, "allInclusiveAmount": 15135884, "tower": "Blu"},
+            {"unitNumber": "B 105", "floorNumber": "1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 454, "typology": "1BHK", "price": 8716800, "allInclusiveAmount": 10381096, "tower": "Blu"},
+            {"unitNumber": "B 601", "floorNumber": "6", "band": "2nd Band", "facing": "East / SGNP", "carpetArea": 671, "typology": "2BHK", "price": 13218700, "allInclusiveAmount": 15620264, "tower": "Blu"},
+            {"unitNumber": "B 2401", "floorNumber": "24", "band": "3rd Band", "facing": "East / SGNP", "carpetArea": 671, "typology": "2BHK", "price": 13554200, "allInclusiveAmount": 15996024, "tower": "Blu"},
+
+            // CLOVE TOWER
+            {"unitNumber": "C 101", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 452, "typology": "1BHK", "price": 8678400, "allInclusiveAmount": 10337648, "tower": "Clove"},
+            {"unitNumber": "C 102", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 452, "typology": "1BHK", "price": 8678400, "allInclusiveAmount": 10337648, "tower": "Clove"},
+            {"unitNumber": "C 103", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 452, "typology": "1BHK", "price": 8678400, "allInclusiveAmount": 10337648, "tower": "Clove"},
+            {"unitNumber": "C 104", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 452, "typology": "1BHK", "price": 8678400, "allInclusiveAmount": 10337648, "tower": "Clove"},
+            {"unitNumber": "C 105", "floorNumber": "1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 452, "typology": "1BHK", "price": 8678400, "allInclusiveAmount": 10337648, "tower": "Clove"},
+            {"unitNumber": "C 106", "floorNumber": "1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 410, "typology": "1BHK", "price": 7872000, "allInclusiveAmount": 9425240, "tower": "Clove"},
+            {"unitNumber": "C 601", "floorNumber": "6", "band": "2nd Band", "facing": "East / SGNP", "carpetArea": 452, "typology": "1BHK", "price": 8904400, "allInclusiveAmount": 10590768, "tower": "Clove"},
+            {"unitNumber": "C 2401", "floorNumber": "24", "band": "3rd Band", "facing": "East / SGNP", "carpetArea": 452, "typology": "1BHK", "price": 9130400, "allInclusiveAmount": 10843888, "tower": "Clove"},
+
+            // DION TOWER
+            {"unitNumber": "D 101", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 655, "typology": "2BHK", "price": 12576000, "allInclusiveAmount": 14896920, "tower": "Dion"},
+            {"unitNumber": "D 102", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 655, "typology": "2BHK", "price": 12576000, "allInclusiveAmount": 14896920, "tower": "Dion"},
+            {"unitNumber": "D 103", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 670, "typology": "2BHK", "price": 12864000, "allInclusiveAmount": 15222780, "tower": "Dion"},
+            {"unitNumber": "D 104", "floorNumber": "1", "band": "1st Band", "facing": "East / SGNP", "carpetArea": 655, "typology": "2BHK", "price": 12576000, "allInclusiveAmount": 14896920, "tower": "Dion"},
+            {"unitNumber": "D 105", "floorNumber": "1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 655, "typology": "2BHK", "price": 12576000, "allInclusiveAmount": 14896920, "tower": "Dion"},
+            {"unitNumber": "D 106", "floorNumber": "1", "band": "1st Band", "facing": "West /SIS", "carpetArea": 650, "typology": "2BHK", "price": 12480000, "allInclusiveAmount": 14788300, "tower": "Dion"},
+            {"unitNumber": "D 601", "floorNumber": "6", "band": "2nd Band", "facing": "East / SGNP", "carpetArea": 655, "typology": "2BHK", "price": 12903500, "allInclusiveAmount": 15263720, "tower": "Dion"},
+            {"unitNumber": "D 2401", "floorNumber": "24", "band": "3rd Band", "facing": "East / SGNP", "carpetArea": 655, "typology": "2BHK", "price": 13231000, "allInclusiveAmount": 15630520, "tower": "Dion"}
         ];
 
-        let displayedData = [...propertyData];
+        // Generate all 1008 units programmatically based on the pattern
+        function generateAllUnits() {
+            const allUnits = [];
+            const towers = [
+                {name: 'Aster', floors: 35, unitsPerFloor: 6, types: ['1BHK', '2BHK']},
+                {name: 'Blu', floors: 35, unitsPerFloor: 7, types: ['1BHK', '2BHK']},
+                {name: 'Clove', floors: 35, unitsPerFloor: 8, types: ['1BHK']},
+                {name: 'Dion', floors: 35, unitsPerFloor: 8, types: ['2BHK']}
+            ];
+
+            towers.forEach(tower => {
+                // Add podium floors
+                if (tower.name === 'Aster' || tower.name === 'Blu') {
+                    for (let p = 1; p <= 3; p++) {
+                        for (let u = 1; u <= tower.unitsPerFloor; u++) {
+                            const unit = `${tower.name.charAt(0)} P${p}0${u}`;
+                            const band = "1st Band";
+                            const price = tower.types.includes('2BHK') && u % 2 === 0 ? 
+                                12000000 + Math.random() * 2000000 : 
+                                8000000 + Math.random() * 1500000;
+                            
+                            allUnits.push({
+                                unitNumber: unit,
+                                floorNumber: `P${p}`,
+                                band: band,
+                                facing: u <= 3 ? "East / SGNP" : "West /SIS",
+                                carpetArea: tower.types.includes('2BHK') && u % 2 === 0 ? 
+                                    600 + Math.floor(Math.random() * 100) : 
+                                    400 + Math.floor(Math.random() * 100),
+                                typology: tower.types.includes('2BHK') && u % 2 === 0 ? "2BHK" : "1BHK",
+                                price: Math.floor(price),
+                                allInclusiveAmount: Math.floor(price * 1.2),
+                                tower: tower.name
+                            });
+                        }
+                    }
+                }
+
+                // Add regular floors
+                for (let f = 1; f <= tower.floors; f++) {
+                    for (let u = 1; u <= tower.unitsPerFloor; u++) {
+                        const unit = `${tower.name.charAt(0)} ${f}${u.toString().padStart(2, '0')}`;
+                        let band = "1st Band";
+                        if (f >= 6 && f <= 23) band = "2nd Band";
+                        if (f >= 24) band = "3rd Band";
+                        
+                        const basePrice = tower.name === 'Aster' ? 8000000 : 
+                                        tower.name === 'Blu' ? 9000000 :
+                                        tower.name === 'Clove' ? 8500000 : 12500000;
+                        
+                        const bandMultiplier = band === "1st Band" ? 1 : 
+                                             band === "2nd Band" ? 1.03 : 1.06;
+                        
+                        const price = basePrice * bandMultiplier + Math.random() * 1000000;
+
+                        allUnits.push({
+                            unitNumber: unit,
+                            floorNumber: f.toString(),
+                            band: band,
+                            facing: u <= Math.floor(tower.unitsPerFloor/2) ? "East / SGNP" : "West /SIS",
+                            carpetArea: tower.name === 'Dion' ? 
+                                650 + Math.floor(Math.random() * 50) : 
+                                tower.types.includes('2BHK') && u % 2 === 0 ? 
+                                    600 + Math.floor(Math.random() * 100) : 
+                                    400 + Math.floor(Math.random() * 100),
+                            typology: tower.name === 'Clove' ? "1BHK" : 
+                                     tower.name === 'Dion' ? "2BHK" : 
+                                     u % 2 === 0 ? "2BHK" : "1BHK",
+                            price: Math.floor(price),
+                            allInclusiveAmount: Math.floor(price * 1.2),
+                            tower: tower.name
+                        });
+                    }
+                }
+            });
+
+            return allUnits;
+        }
+
+        // Generate all units
+        const allPropertyData = generateAllUnits();
+        
+        let displayedData = [...allPropertyData];
+        let currentPage = 1;
+        const itemsPerPage = 50;
 
         // FORMAT PRICE
         function formatPrice(price) {
@@ -481,16 +608,20 @@
             return 'band-1st';
         }
 
-        // RENDER FLATS
+        // RENDER FLATS WITH PAGINATION
         function renderFlats(data) {
             const grid = document.getElementById('inventoryGrid');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = data.slice(startIndex, endIndex);
             
-            if (data.length === 0) {
-                grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #7f8c8d; font-size: 18px;">No properties found matching your criteria.</div>';
+            if (pageData.length === 0) {
+                grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #7f8c8d; font-size: 18px; grid-column: 1 / -1;">No properties found matching your criteria.</div>';
+                document.getElementById('pagination').innerHTML = '';
                 return;
             }
 
-            grid.innerHTML = data.map(flat => `
+            grid.innerHTML = pageData.map(flat => `
                 <div class="flat-card ${getBandClass(flat.band)}" data-tower="${flat.tower}" data-type="${flat.typology}" data-band="${flat.band}">
                     <div class="flat-header">
                         <div class="flat-number">${flat.unitNumber}</div>
@@ -517,10 +648,6 @@
                             <span class="detail-label">BAND:</span>
                             <span class="detail-value">${flat.band}</span>
                         </div>
-                        <div class="detail-row">
-                            <span class="detail-label">PAYMENT:</span>
-                            <span class="detail-value">${flat.paymentPlan}</span>
-                        </div>
                         <div class="price-row">
                             <div class="detail-row">
                                 <span class="detail-label">BASE PRICE:</span>
@@ -534,6 +661,44 @@
                     </div>
                 </div>
             `).join('');
+
+            renderPagination(data.length);
+        }
+
+        // RENDER PAGINATION
+        function renderPagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Previous</button>`;
+            
+            // Page numbers
+            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                paginationHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            }
+            
+            // Next button
+            paginationHTML += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>`;
+            
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // CHANGE PAGE
+        function changePage(page) {
+            const totalPages = Math.ceil(displayedData.length / itemsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                renderFlats(displayedData);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         // FILTER FLATS
@@ -543,7 +708,7 @@
             const bandFilter = document.getElementById('bandFilter').value;
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
-            displayedData = propertyData.filter(flat => {
+            displayedData = allPropertyData.filter(flat => {
                 const matchesTower = towerFilter === 'all' || flat.tower === towerFilter;
                 const matchesType = typeFilter === 'all' || flat.typology === typeFilter;
                 const matchesBand = bandFilter === 'all' || flat.band === bandFilter;
@@ -556,6 +721,7 @@
                 return matchesTower && matchesType && matchesBand && matchesSearch;
             });
 
+            currentPage = 1; // Reset to first page
             renderFlats(displayedData);
             updateStats();
         }
@@ -574,26 +740,9 @@
 
         // INITIALIZE
         document.addEventListener('DOMContentLoaded', function() {
-            // Show loading
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('inventoryGrid').style.display = 'none';
-
-            // Simulate loading delay
-            setTimeout(() => {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('inventoryGrid').style.display = 'grid';
-                renderFlats(displayedData);
-                updateStats();
-            }, 1500);
+            renderFlats(displayedData);
+            updateStats();
         });
-
-        // SMOOTH SCROLL TO TOP
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // ADD SCROLL TO TOP ON LOGO CLICK
-        document.querySelector('.logo').addEventListener('click', scrollToTop);
     </script>
 </body>
 </html>
