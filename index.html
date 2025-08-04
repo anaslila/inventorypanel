@@ -1,140 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Panel v1.92</title>
-    <link rel="stylesheet" href="lookup-styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Panel v1.92</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">
-                <span class="logo-icon">🏢</span>
-                <div>
-                    <h1>Inventory Panel v1.92</h1>
-                    <p>Property Lookup System</p>
-                </div>
-            </div>
-            <div class="controls">
-                <button class="minimize-btn">—</button>
-                <button class="close-btn">✖</button>
-            </div>
+  <div class="container">
+    <!-- ── Header ─────────────────────────────────── -->
+    <div class="header">
+      <div class="logo">
+        <span class="logo-icon">🏢</span>
+        <div>
+          <h1>Inventory Panel v1.92</h1>
+          <p>Property Lookup System</p>
         </div>
-
-        <div class="content">
-            <!-- Input Section -->
-            <div class="input-section">
-                <div class="form-group">
-                    <label>Flat Number / Inventory Number</label>
-                    <div class="input-wrapper">
-                        <input type="text" id="flatNumber" placeholder="Enter flat number (e.g., A P104)" 
-                               oninput="lookupProperty()" autocomplete="off">
-                        <div class="dropdown-icon">▼</div>
-                    </div>
-                    <div class="suggestions" id="suggestions"></div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Band</label>
-                        <input type="text" id="band" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Facing</label>
-                        <input type="text" id="facing" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>RERA Carpet</label>
-                        <input type="text" id="carpet" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Typology</label>
-                        <input type="text" id="typology" readonly>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pricing Section -->
-            <div class="pricing-section">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Agreement Value / Flat Cost</label>
-                        <input type="text" id="agreementValue" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Stamp Duty</label>
-                        <input type="text" id="stampDuty" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>GST</label>
-                        <input type="text" id="gst" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Reg Amt</label>
-                        <input type="text" id="regAmt" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Other Charges</label>
-                        <input type="text" id="otherCharges" readonly>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label>All Inclusive Amount</label>
-                        <input type="text" id="allInclusive" readonly class="highlight">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Possession Charges</label>
-                        <input type="text" id="possessionCharges" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Tower</label>
-                        <input type="text" id="tower" readonly class="tower-input">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Payment Plan Section -->
-            <div class="payment-section" id="paymentSection" style="display: none;">
-                <div class="payment-header">
-                    <h3 id="paymentPlanTitle">Payment Plan Breakup (9:11:80)</h3>
-                    <div class="tower-name" id="towerName">Aster</div>
-                </div>
-                <div class="payment-table">
-                    <div class="payment-row header">
-                        <div class="percentage">%</div>
-                        <div class="amount">Amount</div>
-                        <div class="milestone">Milestone</div>
-                    </div>
-                    <div id="paymentBreakdown">
-                        <!-- Payment breakdown will be populated here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notes Section -->
-            <div class="notes-section">
-                <div class="note-title">*NOTE</div>
-                <div class="note-item">*Payment plan is a split of only flat cost</div>
-                <div class="note-item">*All the prices are negotiable</div>
-                <div class="note-item">*Agreement value is without car park</div>
-            </div>
-
-            <!-- Empty State -->
-            <div class="empty-state" id="emptyState">
-                <h3>Enter Flat Number</h3>
-                <p>Type a flat number (e.g., A P104, B 201, C 1501) to view property details</p>
-            </div>
-        </div>
+      </div>
+      <div class="controls">
+        <button class="minimize-btn">—</button>
+        <button class="close-btn">✖</button>
+      </div>
     </div>
 
-    <script src="inventory-data.js"></script>
-    <script src="lookup-script.js"></script>
+    <!-- ── Content ────────────────────────────────── -->
+    <div class="content">
+      <!-- Input block -->
+      <div class="input-section">
+        <div class="form-group">
+          <label>Flat / Inventory Number</label>
+          <div class="input-wrapper">
+            <input id="flatNumber" placeholder="Type (e.g. A P104)" autocomplete="off">
+            <div class="dropdown-icon">▼</div>
+            <div id="suggestions" class="suggestions"></div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group"><label>Band</label><input id="band" readonly></div>
+          <div class="form-group"><label>Facing</label><input id="facing" readonly></div>
+          <div class="form-group"><label>RERA Carpet</label><input id="carpet" readonly></div>
+          <div class="form-group"><label>Typology</label><input id="typology" readonly></div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="pricing-section">
+        <div class="form-row">
+          <div class="form-group"><label>Agreement Value</label><input id="agreementValue" readonly></div>
+          <div class="form-group"><label>Stamp Duty</label><input id="stampDuty" readonly></div>
+          <div class="form-group"><label>GST</label><input id="gst" readonly></div>
+          <div class="form-group"><label>Reg Amt</label><input id="regAmt" readonly></div>
+          <div class="form-group"><label>Other Charges</label><input id="otherCharges" readonly></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>All Inclusive Amount</label>
+            <input id="allInclusive" class="highlight" readonly>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group"><label>Possession Charges</label><input id="possessionCharges" readonly></div>
+          <div class="form-group"><label>Tower</label><input id="tower" class="tower-input" readonly></div>
+        </div>
+      </div>
+
+      <!-- Payment plan -->
+      <div id="paymentSection" class="payment-section" style="display:none">
+        <div class="payment-header">
+          <h3 id="paymentPlanTitle">Payment Plan</h3>
+          <div id="towerName" class="tower-name"></div>
+        </div>
+        <div class="payment-table">
+          <div class="payment-row header">
+            <div class="percentage">%</div><div class="amount">Amount</div><div class="milestone">Milestone</div>
+          </div>
+          <div id="paymentBreakdown"></div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="notes-section">
+        <div class="note-title">*NOTE</div>
+        <div class="note-item">Payment plan is split of flat cost only</div>
+        <div class="note-item">All prices are negotiable</div>
+        <div class="note-item">Agreement value shown is without car-park</div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="emptyState" class="empty-state">
+        <h3>Start by typing a flat number</h3>
+        <p>e.g. A P104, B 101, C 601…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="data.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
