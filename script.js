@@ -383,4 +383,90 @@ if (localStorage.priceMap){
 /* ========== 5. HELPER SHORTCUT ========== */
 function $id(id){ return document.getElementById(id); }
 </script>
+// INDIAN NUMBER FORMATTING
+function formatIndianNumber(num) {
+    if (!num) return '';
+    
+    // Convert to string and remove existing commas
+    let numStr = num.toString().replace(/,/g, '');
+    
+    // Check if it's a valid number
+    if (isNaN(numStr)) return num;
+    
+    // Split by decimal point
+    let parts = numStr.split('.');
+    let integerPart = parts[0];
+    let decimalPart = parts[1] ? '.' + parts[1] : '';
+    
+    // Apply Indian formatting (lakhs and crores)
+    if (integerPart.length > 3) {
+        // First, add comma before last 3 digits
+        let lastThree = integerPart.slice(-3);
+        let otherNumbers = integerPart.slice(0, -3);
+        
+        // Then add comma every 2 digits for the rest
+        if (otherNumbers !== '') {
+            lastThree = ',' + lastThree;
+        }
+        
+        // Add commas every 2 digits from right to left
+        let formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+        return formatted + decimalPart;
+    }
+    
+    return integerPart + decimalPart;
+}
+
+function parseIndianNumber(formattedNum) {
+    // Remove commas and convert to number
+    return parseFloat(formattedNum.replace(/,/g, '')) || 0;
+}
+
+function formatAndCalculate(input, type) {
+    let value = input.value;
+    
+    // Remove non-digit characters except decimal point
+    value = value.replace(/[^\d.]/g, '');
+    
+    // Format the number in Indian style
+    let formatted = formatIndianNumber(value);
+    
+    // Update the input value
+    input.value = formatted;
+    
+    // Calculate EMI
+    calculateEMI();
+}
+
+// EMI CALCULATOR
+function openCalculator() {
+    openModal('calculatorModal');
+    calculateEMI();
+}
+
+function calculateEMI() {
+    // Parse Indian formatted number
+    const loanAmountInput = document.getElementById('loanAmount').value;
+    const principal = parseIndianNumber(loanAmountInput);
+    const rate = parseFloat(document.getElementById('interestRate').value) / 100 / 12 || 0;
+    const tenure = parseFloat(document.getElementById('loanTenure').value) * 12 || 0;
+
+    if (principal && rate && tenure) {
+        const emi = (principal * rate * Math.pow(1 + rate, tenure)) / (Math.pow(1 + rate, tenure) - 1);
+        const totalAmount = emi * tenure;
+        const totalInterest = totalAmount - principal;
+
+        // Format all amounts in Indian style first, then use formatPrice for display
+        document.getElementById('emiAmount').textContent = formatPrice(Math.round(emi));
+        document.getElementById('totalAmount').textContent = formatPrice(Math.round(totalAmount));
+        document.getElementById('totalInterest').textContent = formatPrice(Math.round(totalInterest));
+        document.getElementById('principalAmount').textContent = formatPrice(Math.round(principal));
+    } else {
+        // Show default values if inputs are invalid
+        document.getElementById('emiAmount').textContent = '₹0';
+        document.getElementById('totalAmount').textContent = '₹0';
+        document.getElementById('totalInterest').textContent = '₹0';
+        document.getElementById('principalAmount').textContent = '₹0';
+    }
+}
 
