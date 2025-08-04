@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Panel v1.92 - MICL</title>
+  <link rel="icon" href="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png">
+  
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:Arial,sans-serif;background:#f0f2f5;padding:20px;color:#333}
+    .container{max-width:800px;margin:auto;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);overflow:hidden}
+    .header{background:#4a90e2;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+    .logo{display:flex;align-items:center;gap:12px}
+    .logo img{width:40px;height:40px;background:#fff;padding:4px;border-radius:6px}
+    .controls button{background:none;border:none;color:#fff;padding:4px 8px;cursor:pointer;border-radius:4px}
+    .content{padding:24px}
+    .form-group{margin-bottom:16px;position:relative}
+    .form-group label{font-size:12px;font-weight:500;color:#666;margin-bottom:6px;display:block;text-transform:uppercase}
+    .form-group input{width:100%;padding:10px 12px;border:2px solid #e1e5e9;border-radius:4px;font-size:14px;font-weight:500}
+    .form-group input:focus{border-color:#4a90e2;outline:none}
+    .form-group input[readonly]{background:#f8f9fa;cursor:not-allowed}
+    .highlight{background:#e8f4f8!important;border-color:#4a90e2!important;font-weight:600!important;font-size:16px!important;color:#2d5a87!important}
+    .tower-input{background:#4a90e2!important;color:#fff!important;text-align:center;font-weight:600}
+    .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:16px}
+    .full-width{grid-column:1/-1}
+    .suggestions{position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid #4a90e2;border-top:none;max-height:200px;overflow-y:auto;display:none;z-index:999}
+    .suggestions.show{display:block}
+    .suggestion-item{padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer}
+    .suggestion-item:hover{background:#f8f9fa}
+    .payment-section{margin:24px 0;padding:20px;background:#f8f9fa;border-radius:8px;display:none}
+    .payment-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .payment-header h3{background:#2d5a87;color:#fff;padding:12px 20px;border-radius:6px;font-weight:600;flex:1;text-align:center}
+    .tower-name{background:#4a90e2;color:#fff;padding:12px 20px;border-radius:6px;font-weight:600;margin-left:12px;text-align:center}
+    .payment-table{background:#fff;border-radius:6px;border:1px solid #e1e5e9;overflow:hidden}
+    .payment-row{display:grid;grid-template-columns:80px 1fr 2fr;border-bottom:1px solid #e1e5e9}
+    .payment-row.header{background:#f1f3f4;font-weight:600}
+    .payment-row div{padding:12px}
+    .payment-row:not(.header) .percentage{background:#e3f2fd;color:#1976d2;font-weight:700;text-align:center}
+    .payment-row:not(.header) .amount{color:#2e7d32;font-weight:600}
+    .notes-section{background:#fff3cd;border:1px solid #ffeaa7;border-radius:6px;padding:16px;margin:20px 0}
+    .note-title{font-weight:600;color:#856404;margin-bottom:8px}
+    .note-item{font-size:12px;color:#856404;margin-bottom:4px}
+    .empty-state{text-align:center;padding:40px;color:#666;background:#f8f9fa;border-radius:8px;margin:20px 0}
+    .error-state{background:#ffebee;border:1px solid #ffcdd2;border-radius:6px;padding:16px;text-align:center;color:#c62828;margin:20px 0}
+    @media(max-width:768px){.form-row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <img src="https://projectsmirror.net/wp-content/uploads/2024/02/MICL-Logo-1-281x300.png" alt="MICL">
+        <div>
+          <h1>Inventory Panel v1.92</h1>
+          <p>MICL Property System</p>
+        </div>
+      </div>
+      <div class="controls">
+        <button onclick="window.close()">✖</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="form-group">
+        <label>Flat Number / Inventory Number</label>
+        <input id="flatNumber" placeholder="Type flat number (e.g. A P104)" oninput="lookup()" autocomplete="off">
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group"><label>Band</label><input id="band" readonly></div>
+        <div class="form-group"><label>Facing</label><input id="facing" readonly></div>
+        <div class="form-group"><label>RERA Carpet</label><input id="carpet" readonly></div>
+        <div class="form-group"><label>Typology</label><input id="typology" readonly></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group"><label>Agreement Value</label><input id="agreementValue" readonly></div>
+        <div class="form-group"><label>Stamp Duty</label><input id="stampDuty" readonly></div>
+        <div class="form-group"><label>GST</label><input id="gst" readonly></div>
+        <div class="form-group"><label>Reg Amt</label><input id="regAmt" readonly></div>
+        <div class="form-group"><label>Other Charges</label><input id="otherCharges" readonly></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>All Inclusive Amount</label>
+          <input id="allInclusive" class="highlight" readonly>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group"><label>Possession Charges</label><input id="possessionCharges" readonly></div>
+        <div class="form-group"><label>Tower</label><input id="tower" class="tower-input" readonly></div>
+      </div>
+
+      <div id="paymentSection" class="payment-section">
+        <div class="payment-header">
+          <h3 id="paymentTitle">Payment Plan</h3>
+          <div id="towerName" class="tower-name"></div>
+        </div>
+        <div class="payment-table">
+          <div class="payment-row header">
+            <div>%</div><div>Amount</div><div>Milestone</div>
+          </div>
+          <div id="paymentRows"></div>
+        </div>
+      </div>
+
+      <div class="notes-section">
+        <div class="note-title">*NOTE</div>
+        <div class="note-item">*Payment plan is split of flat cost only</div>
+        <div class="note-item">*All prices are negotiable</div>
+        <div class="note-item">*Agreement value is without car park</div>
+      </div>
+
+      <div id="emptyState" class="empty-state">
+        <h3>Enter Flat Number</h3>
+        <p>Type any flat number like A P104, B 101, C 601...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // COMPLETE DATA
+    const data = {
+      "A P104": {band:"1st Band",facing:"West /SIS",carpet:"430 Sq Ft",type:"1BHK",price:8256000,stamp:577920,gst:412800,reg:30000,other:487900,possess:95100,total:9859720,tower:"Aster",plan:"9:11:80"},
+      "A P101": {band:"1st Band",facing:"East / SGNP",carpet:"409 Sq Ft",type:"1BHK",price:7852800,stamp:549696,gst:392640,reg:30000,other:487900,possess:90480,total:9403516,tower:"Aster",plan:"9:11:80"},
+      "A P102": {band:"1st Band",facing:"East / SGNP",carpet:"625 Sq Ft",type:"2BHK",price:12000000,stamp:840000,gst:600000,reg:30000,other:637200,possess:138000,total:14245200,tower:"Aster",plan:"9:11:80"},
+      "A 101": {band:"1st Band",facing:"East / SGNP",carpet:"409 Sq Ft",type:"1BHK",price:7852800,stamp:549696,gst:392640,reg:30000,other:487900,possess:90480,total:9403516,tower:"Aster",plan:"9:11:80"},
+      "A 102": {band:"1st Band",facing:"East / SGNP",carpet:"625 Sq Ft",type:"2BHK",price:12000000,stamp:840000,gst:600000,reg:30000,other:637200,possess:138000,total:14245200,tower:"Aster",plan:"9:11:80"},
+      "A 601": {band:"2nd Band",facing:"East / SGNP",carpet:"409 Sq Ft",type:"1BHK",price:8057300,stamp:564011,gst:402865,reg:30000,other:487900,possess:90480,total:9632556,tower:"Aster",plan:"9:11:80"},
+      "A 2401": {band:"3rd Band",facing:"East / SGNP",carpet:"409 Sq Ft",type:"1BHK",price:8261800,stamp:578326,gst:413090,reg:30000,other:487900,possess:90480,total:9861596,tower:"Aster",plan:"9:11:80"},
+      "B 101": {band:"1st Band",facing:"East / SGNP",carpet:"671 Sq Ft",type:"2BHK",price:12883200,stamp:901824,gst:644160,reg:30000,other:637200,possess:148120,total:15244504,tower:"Blu",plan:"9:11:80"},
+      "B 102": {band:"1st Band",facing:"East / SGNP",carpet:"469 Sq Ft",type:"1BHK",price:9004800,stamp:630336,gst:450240,reg:30000,other:487900,possess:103680,total:10706956,tower:"Blu",plan:"9:11:80"},
+      "B 601": {band:"2nd Band",facing:"East / SGNP",carpet:"671 Sq Ft",type:"2BHK",price:13218700,stamp:925309,gst:660935,reg:30000,other:637200,possess:148120,total:15620264,tower:"Blu",plan:"9:11:80"},
+      "B 2401": {band:"3rd Band",facing:"East / SGNP",carpet:"671 Sq Ft",type:"2BHK",price:13554200,stamp:948794,gst:677710,reg:30000,other:637200,possess:148120,total:15996024,tower:"Blu",plan:"9:11:80"},
+      "C 101": {band:"1st Band",facing:"East / SGNP",carpet:"452 Sq Ft",type:"1BHK",price:8678400,stamp:607488,gst:433920,reg:30000,other:487900,possess:99940,total:10337648,tower:"Clove",plan:"9:91"},
+      "C 102": {band:"1st Band",facing:"East / SGNP",carpet:"452 Sq Ft",type:"1BHK",price:8678400,stamp:607488,gst:433920,reg:30000,other:487900,possess:99940,total:10337648,tower:"Clove",plan:"9:91"},
+      "C 601": {band:"2nd Band",facing:"East / SGNP",carpet:"452 Sq Ft",type:"1BHK",price:8904400,stamp:623308,gst:445220,reg:30000,other:487900,possess:99940,total:10590768,tower:"Clove",plan:"9:91"},
+      "C 2401": {band:"3rd Band",facing:"East / SGNP",carpet:"452 Sq Ft",type:"1BHK",price:9130400,stamp:639128,gst:456520,reg:30000,other:487900,possess:99940,total:10843888,tower:"Clove",plan:"9:91"},
+      "D 101": {band:"1st Band",facing:"East / SGNP",carpet:"655 Sq Ft",type:"2BHK",price:12576000,stamp:880320,gst:628800,reg:30000,other:637200,possess:144600,total:14896920,tower:"Dion",plan:"9:91"},
+      "D 102": {band:"1st Band",facing:"East / SGNP",carpet:"655 Sq Ft",type:"2BHK",price:12576000,stamp:880320,gst:628800,reg:30000,other:637200,possess:144600,total:14896920,tower:"Dion",plan:"9:91"},
+      "D 601": {band:"2nd Band",facing:"East / SGNP",carpet:"655 Sq Ft",type:"2BHK",price:12903500,stamp:903245,gst:645175,reg:30000,other:637200,possess:144600,total:15263720,tower:"Dion",plan:"9:91"},
+      "D 2401": {band:"3rd Band",facing:"East / SGNP",carpet:"655 Sq Ft",type:"2BHK",price:13231000,stamp:926170,gst:661550,reg:30000,other:637200,possess:144600,total:15630520,tower:"Dion",plan:"9:91"}
+    };
+
+    const plans = {
+      "9:11:80": [{s:"On Booking",p:9},{s:"On Completion of Terrace",p:11},{s:"On Possession",p:80}],
+      "9:91": [{s:"On Booking",p:9},{s:"On Occupancy Certificate",p:91}]
+    };
+
+    const colors = {Aster:"#4a90e2",Blu:"#5cb85c",Clove:"#f0ad4e",Dion:"#d9534f"};
+
+    // PERFECT Indian formatting
+    function formatMoney(n) {
+      if(!n) return "₹ 0";
+      let s = n.toString();
+      if(s.length <= 3) return "₹ " + s;
+      let last = s.slice(-3);
+      let rest = s.slice(0,-3);
+      let result = "";
+      for(let i = rest.length; i > 0; i -= 2) {
+        let start = Math.max(0, i-2);
+        let part = rest.slice(start, i);
+        result = part + (result ? "," + result : "");
+      }
+      return "₹ " + result + "," + last;
+    }
+
+    function lookup() {
+      const input = document.getElementById('flatNumber').value.trim().toUpperCase();
+      const suggestions = document.getElementById('suggestions');
+      const empty = document.getElementById('emptyState');
+      const payment = document.getElementById('paymentSection');
+
+      // Show suggestions
+      if(input && input.length > 0) {
+        const matches = Object.keys(data).filter(k => k.includes(input)).slice(0,8);
+        if(matches.length > 0) {
+          suggestions.innerHTML = matches.map(k => `<div class="suggestion-item" onclick="select('${k}')">${k} - ${data[k].tower} ${data[k].type}</div>`).join('');
+          suggestions.classList.add('show');
+        } else {
+          suggestions.classList.remove('show');
+        }
+      } else {
+        suggestions.classList.remove('show');
+      }
+
+      // Lookup property
+      const prop = data[input];
+      if(prop) {
+        document.getElementById('band').value = prop.band;
+        document.getElementById('facing').value = prop.facing;
+        document.getElementById('carpet').value = prop.carpet;
+        document.getElementById('typology').value = prop.type;
+        document.getElementById('agreementValue').value = formatMoney(prop.price);
+        document.getElementById('stampDuty').value = formatMoney(prop.stamp);
+        document.getElementById('gst').value = formatMoney(prop.gst);
+        document.getElementById('regAmt').value = formatMoney(prop.reg);
+        document.getElementById('otherCharges').value = formatMoney(prop.other);
+        document.getElementById('possessionCharges').value = formatMoney(prop.possess);
+        document.getElementById('allInclusive').value = formatMoney(prop.total);
+        document.getElementById('tower').value = prop.tower;
+        document.getElementById('tower').style.background = colors[prop.tower];
+
+        // Payment plan
+        const plan = plans[prop.plan];
+        document.getElementById('paymentTitle').textContent = `Payment Plan (${prop.plan})`;
+        document.getElementById('towerName').textContent = prop.tower;
+        document.getElementById('towerName').style.background = colors[prop.tower];
+        document.getElementById('paymentRows').innerHTML = plan.map(p => 
+          `<div class="payment-row"><div>${p.p}%</div><div>${formatMoney(Math.round(prop.price * p.p / 100))}</div><div>${p.s}</div></div>`
+        ).join('');
+        
+        payment.style.display = 'block';
+        empty.style.display = 'none';
+        clearError();
+      } else if(input) {
+        clear();
+        showError(input);
+      } else {
+        clear();
+        empty.style.display = 'block';
+      }
+    }
+
+    function select(unit) {
+      document.getElementById('flatNumber').value = unit;
+      document.getElementById('suggestions').classList.remove('show');
+      lookup();
+    }
+
+    function clear() {
+      ['band','facing','carpet','typology','agreementValue','stampDuty','gst','regAmt','otherCharges','possessionCharges','allInclusive','tower'].forEach(id => 
+        document.getElementById(id).value = ''
+      );
+      document.getElementById('paymentSection').style.display = 'none';
+    }
+
+    function showError(unit) {
+      clearError();
+      const div = document.createElement('div');
+      div.id = 'error';
+      div.className = 'error-state';
+      div.innerHTML = `<h3>Not Found</h3><p>No property "${unit}" found</p>`;
+      document.querySelector('.content').appendChild(div);
+      setTimeout(clearError, 4000);
+    }
+
+    function clearError() {
+      const err = document.getElementById('error');
+      if(err) err.remove();
+    }
+
+    // Hide suggestions on click outside
+    document.addEventListener('click', e => {
+      if(!e.target.closest('.form-group')) {
+        document.getElementById('suggestions').classList.remove('show');
+      }
+    });
+  </script>
+</body>
+</html>
