@@ -27,6 +27,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- SheetJS reader -->
 <script src="xlsx.full.min.js"></script>
+    <label style="font-weight:600;display:inline-block;margin:20px 0">
+    Upload latest Excel:
+    <input type="file" accept=".xlsx" onchange="readExcel(event)">
+</label>
+
 </head>
 <body>
   <div class="container">
