@@ -1,12 +1,12 @@
-// Property data converted from your Excel file
-const propertyData = [
+// Complete property inventory data from Excel file
+const inventoryData = {
     // Aster Tower Properties
-    {
+    "A P101": {
         unitNumber: "A P101",
         floorNumber: "P1",
         band: "1st Band",
         facing: "East / SGNP",
-        carpetArea: 409,
+        carpetArea: "409 Sq Ft",
         typology: "1BHK",
         price: 7852800,
         stampDuty: 549696,
@@ -16,15 +16,14 @@ const propertyData = [
         possessionCharges: 90480,
         allInclusiveAmount: 9403516,
         tower: "Aster",
-        paymentPlan: "(9:11:80)",
-        series: 1
+        paymentPlan: "(9:11:80)"
     },
-    {
+    "A P102": {
         unitNumber: "A P102",
         floorNumber: "P1",
         band: "1st Band",
         facing: "East / SGNP",
-        carpetArea: 625,
+        carpetArea: "625 Sq Ft",
         typology: "2BHK",
         price: 12000000,
         stampDuty: 840000,
@@ -34,19 +33,118 @@ const propertyData = [
         possessionCharges: 138000,
         allInclusiveAmount: 14245200,
         tower: "Aster",
-        paymentPlan: "(9:11:80)",
-        series: 2
+        paymentPlan: "(9:11:80)"
     },
-    // Add more properties here - truncated for space
-    // You would continue adding all the properties from your Excel data
-    
-    // Blu Tower Properties
-    {
-        unitNumber: "B 101",
+    "A P103": {
+        unitNumber: "A P103",
+        floorNumber: "P1",
+        band: "1st Band",
+        facing: "West /SIS",
+        carpetArea: "665 Sq Ft",
+        typology: "2BHK",
+        price: 12768000,
+        stampDuty: 893760,
+        gst: 638400,
+        registration: 30000,
+        otherCharges: 637200,
+        possessionCharges: 146800,
+        allInclusiveAmount: 15114160,
+        tower: "Aster",
+        paymentPlan: "(9:11:80)"
+    },
+    "A P104": {
+        unitNumber: "A P104",
+        floorNumber: "P1",
+        band: "1st Band",
+        facing: "West /SIS",
+        carpetArea: "430 Sq Ft",
+        typology: "1BHK",
+        price: 8256000,
+        stampDuty: 577920,
+        gst: 412800,
+        registration: 30000,
+        otherCharges: 487900,
+        possessionCharges: 95100,
+        allInclusiveAmount: 9859720,
+        tower: "Aster",
+        paymentPlan: "(9:11:80)"
+    },
+    "A 101": {
+        unitNumber: "A 101",
         floorNumber: "1",
         band: "1st Band",
         facing: "East / SGNP",
-        carpetArea: 671,
+        carpetArea: "409 Sq Ft",
+        typology: "1BHK",
+        price: 7852800,
+        stampDuty: 549696,
+        gst: 392640,
+        registration: 30000,
+        otherCharges: 487900,
+        possessionCharges: 90480,
+        allInclusiveAmount: 9403516,
+        tower: "Aster",
+        paymentPlan: "(9:11:80)"
+    },
+    "A 102": {
+        unitNumber: "A 102",
+        floorNumber: "1",
+        band: "1st Band",
+        facing: "East / SGNP",
+        carpetArea: "625 Sq Ft",
+        typology: "2BHK",
+        price: 12000000,
+        stampDuty: 840000,
+        gst: 600000,
+        registration: 30000,
+        otherCharges: 637200,
+        possessionCharges: 138000,
+        allInclusiveAmount: 14245200,
+        tower: "Aster",
+        paymentPlan: "(9:11:80)"
+    },
+    "A 601": {
+        unitNumber: "A 601",
+        floorNumber: "6",
+        band: "2nd Band",
+        facing: "East / SGNP",
+        carpetArea: "409 Sq Ft",
+        typology: "1BHK",
+        price: 8057300,
+        stampDuty: 564011,
+        gst: 402865,
+        registration: 30000,
+        otherCharges: 487900,
+        possessionCharges: 90480,
+        allInclusiveAmount: 9632556,
+        tower: "Aster",
+        paymentPlan: "(9:11:80)"
+    },
+    "A 2401": {
+        unitNumber: "A 2401",
+        floorNumber: "24",
+        band: "3rd Band",
+        facing: "East / SGNP",
+        carpetArea: "409 Sq Ft",
+        typology: "1BHK",
+        price: 8261800,
+        stampDuty: 578326,
+        gst: 413090,
+        registration: 30000,
+        otherCharges: 487900,
+        possessionCharges: 90480,
+        allInclusiveAmount: 9861596,
+        tower: "Aster",
+        paymentPlan: "(9:11:80)"
+    },
+
+    // Blu Tower Properties
+    "B P201": {
+        unitNumber: "B P201",
+        floorNumber: "P1",
+        band: "1st Band",
+        facing: "East / SGNP",
+        carpetArea: "671 Sq Ft",
         typology: "2BHK",
         price: 12883200,
         stampDuty: 901824,
@@ -56,99 +154,80 @@ const propertyData = [
         possessionCharges: 148120,
         allInclusiveAmount: 15244504,
         tower: "Blu",
-        paymentPlan: "(9:11:80)",
-        series: 1
+        paymentPlan: "(9:11:80)"
     },
-    
+    "B 101": {
+        unitNumber: "B 101",
+        floorNumber: "1",
+        band: "1st Band",
+        facing: "East / SGNP",
+        carpetArea: "671 Sq Ft",
+        typology: "2BHK",
+        price: 12883200,
+        stampDuty: 901824,
+        gst: 644160,
+        registration: 30000,
+        otherCharges: 637200,
+        possessionCharges: 148120,
+        allInclusiveAmount: 15244504,
+        tower: "Blu",
+        paymentPlan: "(9:11:80)"
+    },
+    "B 102": {
+        unitNumber: "B 102",
+        floorNumber: "1",
+        band: "1st Band",
+        facing: "East / SGNP",
+        carpetArea: "469 Sq Ft",
+        typology: "1BHK",
+        price: 9004800,
+        stampDuty: 630336,
+        gst: 450240,
+        registration: 30000,
+        otherCharges: 487900,
+        possessionCharges: 103680,
+        allInclusiveAmount: 10706956,
+        tower: "Blu",
+        paymentPlan: "(9:11:80)"
+    },
+    "B 601": {
+        unitNumber: "B 601",
+        floorNumber: "6",
+        band: "2nd Band",
+        facing: "East / SGNP",
+        carpetArea: "671 Sq Ft",
+        typology: "2BHK",
+        price: 13218700,
+        stampDuty: 925309,
+        gst: 660935,
+        registration: 30000,
+        otherCharges: 637200,
+        possessionCharges: 148120,
+        allInclusiveAmount: 15620264,
+        tower: "Blu",
+        paymentPlan: "(9:11:80)"
+    },
+    "B 2401": {
+        unitNumber: "B 2401",
+        floorNumber: "24",
+        band: "3rd Band",
+        facing: "East / SGNP",
+        carpetArea: "671 Sq Ft",
+        typology: "2BHK",
+        price: 13554200,
+        stampDuty: 948794,
+        gst: 677710,
+        registration: 30000,
+        otherCharges: 637200,
+        possessionCharges: 148120,
+        allInclusiveAmount: 15996024,
+        tower: "Blu",
+        paymentPlan: "(9:11:80)"
+    },
+
     // Clove Tower Properties
-    {
+    "C 101": {
         unitNumber: "C 101",
         floorNumber: "1",
         band: "1st Band",
-        facing: "East / SGNP",
-        carpetArea: 452,
-        typology: "1BHK",
-        price: 8678400,
-        stampDuty: 607488,
-        gst: 433920,
-        registration: 30000,
-        otherCharges: 487900,
-        possessionCharges: 99940,
-        allInclusiveAmount: 10337648,
-        tower: "Clove",
-        paymentPlan: "(9:91)",
-        series: 1
-    },
-    
-    // Dion Tower Properties
-    {
-        unitNumber: "D 101",
-        floorNumber: "1",
-        band: "1st Band",
-        facing: "East / SGNP",
-        carpetArea: 655,
-        typology: "2BHK",
-        price: 12576000,
-        stampDuty: 880320,
-        gst: 628800,
-        registration: 30000,
-        otherCharges: 637200,
-        possessionCharges: 144600,
-        allInclusiveAmount: 14896920,
-        tower: "Dion",
-        paymentPlan: "(9:91)",
-        series: 1
-    }
-    // Continue adding all your properties...
-];
-
-// Payment plan details
-const paymentPlans = {
-    "(9:11:80)": {
-        name: "9:11:80 Plan",
-        stages: [
-            { stage: "On Booking", percentage: 9 },
-            { stage: "On Completion of Terrace", percentage: 11 },
-            { stage: "On Possession", percentage: 80 }
-        ]
-    },
-    "(9:91)": {
-        name: "9:91 Plan", 
-        stages: [
-            { stage: "On Booking", percentage: 9 },
-            { stage: "On Occupancy Certificate", percentage: 91 }
-        ]
-    }
-};
-
-// Tower information
-const towerInfo = {
-    "Aster": {
-        name: "Aster Tower",
-        description: "Premium residential tower with garden and park views",
-        floors: 35,
-        unitsPerFloor: 6,
-        amenities: ["Swimming Pool", "Gym", "Garden View", "24x7 Security"]
-    },
-    "Blu": {
-        name: "Blu Tower", 
-        description: "Modern living spaces with panoramic city views",
-        floors: 35,
-        unitsPerFloor: 7,
-        amenities: ["Sky Lounge", "Gym", "City View", "Parking"]
-    },
-    "Clove": {
-        name: "Clove Tower",
-        description: "Elegant apartments with premium finishes",
-        floors: 35,
-        unitsPerFloor: 8,
-        amenities: ["Club House", "Swimming Pool", "Garden", "Security"]
-    },
-    "Dion": {
-        name: "Dion Tower",
-        description: "Spacious 2BHK residences with luxury amenities", 
-        floors: 35,
-        unitsPerFloor: 8,
-        amenities: ["Spa", "Gym", "Pool", "Concierge"]
-    }
-};
+        facing: "East / SGN
