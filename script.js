@@ -1,373 +1,412 @@
 // Global variables
-let filteredProperties = [...propertyData];
-let currentPage = 0;
-const propertiesPerPage = 12;
-let currentView = 'grid';
+let currentProperty = null;
+let suggestionIndex = -1;
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
-    initializePriceRange();
-    loadProperties();
     setupEventListeners();
+    showEmptyState();
 });
 
 // Setup event listeners
 function setupEventListeners() {
-    // Price range slider
-    const priceRange = document.getElementById('priceRange');
-    const priceDisplay = document.getElementById('priceDisplay');
+    const flatNumberInput = document.getElementById('flatNumber');
+    const suggestionsDiv = document.getElementById('suggestions');
     
-    priceRange.addEventListener('input', function() {
-        const value = parseInt(this.value);
-        priceDisplay.textContent = `Up to ₹${(value / 10000000).toFixed(1)} Cr`;
+    // Input event for real-time lookup
+    flatNumberInput.addEventListener('input', function() {
+        lookupProperty();
+        showSuggestions(this.value);
     });
     
-    // Smooth scrolling for navigation links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
+    // Keyboard navigation for suggestions
+    flatNumberInput.addEventListener('keydown', function(e) {
+        const suggestions = document.querySelectorAll('.suggestion-item');
+        
+        if (e.key === 'ArrowDown') {
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+            suggestionIndex = Math.min(suggestionIndex + 1, suggestions.length - 1);
+            highlightSuggestion();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            suggestionIndex = Math.max(suggestionIndex - 1, -1);
+            highlightSuggestion();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (suggestionIndex >= 0 && suggestions[suggestionIndex]) {
+                selectSuggestion(suggestions[suggestionIndex].dataset.unit);
             }
-        });
+        } else if (e.key === 'Escape') {
+            hideSuggestions();
+        }
+    });
+    
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.input-wrapper')) {
+            hideSuggestions();
+        }
+    });
+    
+    // Window controls
+    document.querySelector('.minimize-btn').addEventListener('click', function() {
+        document.body.style.display = 'none';
+        setTimeout(() => document.body.style.display = 'block', 1000);
+    });
+    
+    document.querySelector('.close-btn').addEventListener('click', function() {
+        if (confirm('Are you sure you want to close the application?')) {
+            window.close();
+        }
     });
 }
 
-// Initialize price range slider
-function initializePriceRange() {
-    const prices = propertyData.map(p => p.allInclusiveAmount);
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
+// Main property lookup function
+function lookupProperty() {
+    const flatNumber = document.getElementById('flatNumber').value.trim().toUpperCase();
     
-    const priceRange = document.getElementById('priceRange');
-    priceRange.min = minPrice;
-    priceRange.max = maxPrice;
-    priceRange.value = maxPrice;
-    
-    document.getElementById('priceDisplay').textContent = `Up to ₹${(maxPrice / 10000000).toFixed(1)} Cr`;
-}
-
-// Apply filters
-function applyFilters() {
-    const tower = document.getElementById('towerFilter').value;
-    const typology = document.getElementById('typologyFilter').value;
-    const band = document.getElementById('bandFilter').value;
-    const facing = document.getElementById('facingFilter').value;
-    const maxPrice = parseInt(document.getElementById('priceRange').value);
-    
-    filteredProperties = propertyData.filter(property => {
-        return (!tower || property.tower === tower) &&
-               (!typology || property.typology === typology) &&
-               (!band || property.band === band) &&
-               (!facing || property.facing === facing) &&
-               (property.allInclusiveAmount <= maxPrice);
-    });
-    
-    currentPage = 0;
-    loadProperties(true);
-}
-
-// Reset filters
-function resetFilters() {
-    document.getElementById('towerFilter').value = '';
-    document.getElementById('typologyFilter').value = '';
-    document.getElementById('bandFilter').value = '';
-    document.getElementById('facingFilter').value = '';
-    
-    const priceRange = document.getElementById('priceRange');
-    priceRange.value = priceRange.max;
-    document.getElementById('priceDisplay').textContent = `Up to ₹${(priceRange.max / 10000000).toFixed(1)} Cr`;
-    
-    filteredProperties = [...propertyData];
-    currentPage = 0;
-    loadProperties(true);
-}
-
-// Load properties
-function loadProperties(reset = false) {
-    const propertyGrid = document.getElementById('propertyGrid');
-    
-    if (reset) {
-        propertyGrid.innerHTML = '';
-        currentPage = 0;
-    }
-    
-    const startIndex = currentPage * propertiesPerPage;
-    const endIndex = startIndex + propertiesPerPage;
-    const propertiesToShow = filteredProperties.slice(startIndex, endIndex);
-    
-    if (propertiesToShow.length === 0 && reset) {
-        propertyGrid.innerHTML = '<div class="no-results"><h3>No properties found</h3><p>Try adjusting your filters</p></div>';
-        document.getElementById('loadMoreBtn').style.display = 'none';
+    if (!flatNumber) {
+        clearAllFields();
+        showEmptyState();
         return;
     }
     
-    propertiesToShow.forEach(property => {
-        const propertyCard = createPropertyCard(property);
-        propertyGrid.appendChild(propertyCard);
+    const property = inventoryData[flatNumber];
+    
+    if (property) {
+        currentProperty = property;
+        populateFields(property);
+        showPaymentPlan(property);
+        hideEmptyState();
+        hideSuggestions();
+    } else {
+        clearAllFields();
+        showErrorState(flatNumber);
+    }
+}
+
+// Populate all form fields
+function populateFields(property) {
+    document.getElementById('band').value = property.band;
+    document.getElementById('facing').value = property.facing;
+    document.getElementById('carpet').value = property.carpetArea;
+    document.getElementById('typology').value = property.typology;
+    
+    // Format currency values
+    document.getElementById('agreementValue').value = formatCurrency(property.price);
+    document.getElementById('stampDuty').value = formatCurrency(property.stampDuty);
+    document.getElementById('gst').value = formatCurrency(property.gst);
+    document.getElementById('regAmt').value = formatCurrency(property.registration);
+    document.getElementById('otherCharges').value = formatCurrency(property.otherCharges);
+    document.getElementById('allInclusive').value = formatCurrency(property.allInclusiveAmount);
+    document.getElementById('possessionCharges').value = formatCurrency(property.possessionCharges);
+    document.getElementById('tower').value = property.tower;
+    
+    // Update tower input color
+    const towerInput = document.getElementById('tower');
+    const towerColor = towerColors[property.tower] || '#4a90e2';
+    towerInput.style.background = towerColor;
+    
+    // Add fade-in animation to fields
+    document.querySelectorAll('.form-group input').forEach(input => {
+        input.classList.add('fade-in');
+    });
+}
+
+// Show payment plan breakdown
+function showPaymentPlan(property) {
+    const paymentSection = document.getElementById('paymentSection');
+    const paymentPlanTitle = document.getElementById('paymentPlanTitle');
+    const towerName = document.getElementById('towerName');
+    const paymentBreakdown = document.getElementById('paymentBreakdown');
+    
+    const plan = paymentPlans[property.paymentPlan];
+    if (!plan) return;
+    
+    // Update title and tower
+    paymentPlanTitle.textContent = `Payment Plan Breakup ${plan.name}`;
+    towerName.textContent = property.tower;
+    
+    // Update tower name color
+    const towerColor = towerColors[property.tower] || '#4a90e2';
+    towerName.style.background = towerColor;
+    
+    // Generate payment breakdown
+    paymentBreakdown.innerHTML = '';
+    
+    plan.stages.forEach(stage => {
+        const amount = Math.round(property.price * stage.percentage / 100);
+        const row = document.createElement('div');
+        row.className = 'payment-row';
+        row.innerHTML = `
+            <div class="percentage">${stage.percentage}%</div>
+            <div class="amount">₹ ${formatNumber(amount)}</div>
+            <div class="milestone">${stage.stage}</div>
+        `;
+        paymentBreakdown.appendChild(row);
     });
     
-    // Show/hide load more button
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
-    if (endIndex >= filteredProperties.length) {
-        loadMoreBtn.style.display = 'none';
-    } else {
-        loadMoreBtn.style.display = 'block';
-    }
-    
-    currentPage++;
+    paymentSection.style.display = 'block';
+    paymentSection.classList.add('fade-in');
 }
 
-// Create property card
-function createPropertyCard(property) {
-    const card = document.createElement('div');
-    card.className = 'property-card';
-    card.onclick = () => openPropertyModal(property);
+// Show suggestions dropdown
+function showSuggestions(query) {
+    const suggestionsDiv = document.getElementById('suggestions');
     
-    card.innerHTML = `
-        <div class="property-header">
-            <h3>${property.unitNumber}</h3>
-            <div class="tower-badge">${property.tower} Tower</div>
-        </div>
-        <div class="property-details">
-            <div class="property-info">
-                <div class="info-item">
-                    <div class="label">Floor</div>
-                    <div class="value">${property.floorNumber}</div>
-                </div>
-                <div class="info-item">
-                    <div class="label">Area</div>
-                    <div class="value">${property.carpetArea} sq ft</div>
-                </div>
-                <div class="info-item">
-                    <div class="label">Type</div>
-                    <div class="value">${property.typology}</div>
-                </div>
-                <div class="info-item">
-                    <div class="label">Facing</div>
-                    <div class="value">${property.facing}</div>
-                </div>
-            </div>
-            <div class="pricing">
-                <div class="main-price">
-                    <div class="price-label">All Inclusive Price</div>
-                    <div class="price-value">₹${formatPrice(property.allInclusiveAmount)}</div>
-                </div>
-                <div class="price-breakdown">
-                    <span>Base Price: ₹${formatPrice(property.price)}</span>
-                    <span>Price/sq ft: ₹${Math.round(property.price / property.carpetArea)}</span>
-                </div>
-            </div>
-            <div class="action-buttons">
-                <button class="btn-primary" onclick="event.stopPropagation(); contactForProperty('${property.unitNumber}')">
-                    <i class="fas fa-phone"></i> Contact
-                </button>
-                <button class="btn-secondary" onclick="event.stopPropagation(); openPropertyModal(property)">
-                    <i class="fas fa-info-circle"></i> Details
-                </button>
-            </div>
-        </div>
+    if (!query || query.length < 1) {
+        hideSuggestions();
+        return;
+    }
+    
+    const matches = searchUnits(query);
+    
+    if (matches.length === 0) {
+        hideSuggestions();
+        return;
+    }
+    
+    suggestionsDiv.innerHTML = '';
+    
+    matches.forEach((unitNumber, index) => {
+        const property = inventoryData[unitNumber];
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.dataset.unit = unitNumber;
+        div.innerHTML = `
+            <div class="unit-number">${unitNumber}</div>
+            <div class="unit-details">${property.tower} Tower • ${property.typology} • ${property.carpetArea}</div>
+        `;
+        
+        div.addEventListener('click', () => selectSuggestion(unitNumber));
+        suggestionsDiv.appendChild(div);
+    });
+    
+    suggestionsDiv.classList.add('show');
+    suggestionIndex = -1;
+}
+
+// Hide suggestions dropdown
+function hideSuggestions() {
+    const suggestionsDiv = document.getElementById('suggestions');
+    suggestionsDiv.classList.remove('show');
+    suggestionIndex = -1;
+}
+
+// Highlight suggestion based on keyboard navigation
+function highlightSuggestion() {
+    const suggestions = document.querySelectorAll('.suggestion-item');
+    
+    suggestions.forEach((item, index) => {
+        if (index === suggestionIndex) {
+            item.style.background = '#e3f2fd';
+        } else {
+            item.style.background = '';
+        }
+    });
+}
+
+// Select suggestion
+function selectSuggestion(unitNumber) {
+    document.getElementById('flatNumber').value = unitNumber;
+    hideSuggestions();
+    lookupProperty();
+}
+
+// Clear all form fields
+function clearAllFields() {
+    const fields = [
+        'band', 'facing', 'carpet', 'typology',
+        'agreementValue', 'stampDuty', 'gst', 'regAmt',
+        'otherCharges', 'allInclusive', 'possessionCharges', 'tower'
+    ];
+    
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        field.value = '';
+        field.style.background = '';
+    });
+    
+    // Hide payment section
+    document.getElementById('paymentSection').style.display = 'none';
+    currentProperty = null;
+}
+
+// Show empty state
+function showEmptyState() {
+    const emptyState = document.getElementById('emptyState');
+    if (emptyState) {
+        emptyState.style.display = 'block';
+    }
+}
+
+// Hide empty state
+function hideEmptyState() {
+    const emptyState = document.getElementById('emptyState');
+    if (emptyState) {
+        emptyState.style.display = 'none';
+    }
+}
+
+// Show error state
+function showErrorState(flatNumber) {
+    hideEmptyState();
+    
+    // Remove existing error state
+    const existingError = document.querySelector('.error-state');
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    // Create new error state
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-state fade-in';
+    errorDiv.innerHTML = `
+        <h3>Property Not Found</h3>
+        <p>No property found with number "${flatNumber}"</p>
+        <p>Please check the spelling and try again</p>
     `;
     
-    return card;
+    document.querySelector('.content').appendChild(errorDiv);
+    
+    // Remove error after 5 seconds
+    setTimeout(() => {
+        if (errorDiv.parentNode) {
+            errorDiv.remove();
+            if (!currentProperty) {
+                showEmptyState();
+            }
+        }
+    }, 5000);
 }
 
-// Format price for display
-function formatPrice(price) {
-    if (price >= 10000000) {
-        return `${(price / 10000000).toFixed(2)} Cr`;
-    } else if (price >= 100000) {
-        return `${(price / 100000).toFixed(2)} L`;
-    } else {
-        return price.toLocaleString('en-IN');
+// Format currency values
+function formatCurrency(value) {
+    if (!value) return '';
+    return `₹ ${formatNumber(value)}`;
+}
+
+// Format numbers with Indian numbering system
+function formatNumber(num) {
+    if (!num) return '0';
+    
+    // Convert to string and handle decimals
+    const numStr = num.toString();
+    const parts = numStr.split('.');
+    let integerPart = parts[0];
+    const decimalPart = parts[1] ? '.' + parts[1] : '';
+    
+    // Add commas in Indian style (last 3, then every 2)
+    if (integerPart.length > 3) {
+        const lastThree = integerPart.substr(integerPart.length - 3);
+        const remaining = integerPart.substr(0, integerPart.length - 3);
+        const formattedRemaining = remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+        integerPart = formattedRemaining + ',' + lastThree;
+    }
+    
+    return integerPart + decimalPart;
+}
+
+// Print function (optional)
+function printDetails() {
+    if (!currentProperty) {
+        alert('Please select a property first');
+        return;
+    }
+    
+    window.print();
+}
+
+// Export to CSV function (optional)
+function exportToCSV() {
+    if (!currentProperty) {
+        alert('Please select a property first');
+        return;
+    }
+    
+    const property = currentProperty;
+    const csvContent = `
+Property Details
+Unit Number,${property.unitNumber}
+Floor Number,${property.floorNumber}
+Band,${property.band}
+Facing,${property.facing}
+Carpet Area,${property.carpetArea}
+Typology,${property.typology}
+Tower,${property.tower}
+
+Pricing Details
+Agreement Value,${property.price}
+Stamp Duty,${property.stampDuty}
+GST,${property.gst}
+Registration Amount,${property.registration}
+Other Charges,${property.otherCharges}
+Possession Charges,${property.possessionCharges}
+All Inclusive Amount,${property.allInclusiveAmount}
+    `.trim();
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${property.unitNumber}_details.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl+P for print
+    if (e.ctrlKey && e.key === 'p') {
+        e.preventDefault();
+        printDetails();
+    }
+    
+    // Ctrl+E for export
+    if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        exportToCSV();
+    }
+    
+    // Ctrl+F to focus on input
+    if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        document.getElementById('flatNumber').focus();
+    }
+    
+    // Escape to clear
+    if (e.key === 'Escape' && !document.querySelector('.suggestions.show')) {
+        document.getElementById('flatNumber').value = '';
+        clearAllFields();
+        showEmptyState();
+    }
+});
+
+// Auto-save last searched property
+function saveLastSearch(unitNumber) {
+    localStorage.setItem('lastSearchedUnit', unitNumber);
+}
+
+function loadLastSearch() {
+    const lastUnit = localStorage.getItem('lastSearchedUnit');
+    if (lastUnit && inventoryData[lastUnit]) {
+        document.getElementById('flatNumber').value = lastUnit;
+        lookupProperty();
     }
 }
 
-// Switch view between grid and list
-function switchView(view) {
-    currentView = view;
-    const propertyGrid = document.getElementById('propertyGrid');
-    const viewButtons = document.querySelectorAll('.view-btn');
+// Load last search on page load
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(loadLastSearch, 500);
+});
+
+// Save search when property is found
+const originalLookupProperty = lookupProperty;
+lookupProperty = function() {
+    originalLookupProperty();
     
-    // Update active button
-    viewButtons.forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    // Update grid class
-    if (view === 'list') {
-        propertyGrid.classList.add('list-view');
-    } else {
-        propertyGrid.classList.remove('list-view');
+    const flatNumber = document.getElementById('flatNumber').value.trim().toUpperCase();
+    if (currentProperty) {
+        saveLastSearch(flatNumber);
     }
-}
-
-// Load more properties
-function loadMoreProperties() {
-    loadProperties();
-}
-
-// Open property detail modal
-function openPropertyModal(property) {
-    const modal = document.getElementById('propertyModal');
-    const modalContent = document.getElementById('modalContent');
-    
-    const paymentPlan = paymentPlans[property.paymentPlan];
-    const tower = towerInfo[property.tower];
-    
-    modalContent.innerHTML = `
-        <div class="modal-header">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 12px 12px 0 0;">
-                <h2>${property.unitNumber} - ${property.tower} Tower</h2>
-                <p>${property.typology} • ${property.carpetArea} sq ft • Floor ${property.floorNumber}</p>
-            </div>
-        </div>
-        <div class="modal-body" style="padding: 2rem;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                <div>
-                    <h3 style="margin-bottom: 1rem; color: #1e293b;">Property Details</h3>
-                    <div style="display: grid; gap: 0.5rem;">
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">Unit Number:</span>
-                            <span>${property.unitNumber}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">Floor:</span>
-                            <span>${property.floorNumber}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">Carpet Area:</span>
-                            <span>${property.carpetArea} sq ft</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">Type:</span>
-                            <span>${property.typology}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">Facing:</span>
-                            <span>${property.facing}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">Price Band:</span>
-                            <span>${property.band}</span>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <h3 style="margin-bottom: 1rem; color: #1e293b;">Price Breakdown</h3>
-                    <div style="display: grid; gap: 0.5rem;">
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">Base Price:</span>
-                            <span>₹${formatPrice(property.price)}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">Stamp Duty:</span>
-                            <span>₹${formatPrice(property.stampDuty)}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">GST:</span>
-                            <span>₹${formatPrice(property.gst)}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">Registration:</span>
-                            <span>₹${formatPrice(property.registration)}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">Other Charges:</span>
-                            <span>₹${formatPrice(property.otherCharges)}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #059669; color: white; border-radius: 6px; font-weight: 600;">
-                            <span>Total Amount:</span>
-                            <span>₹${formatPrice(property.allInclusiveAmount)}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 2rem;">
-                <h3 style="margin-bottom: 1rem; color: #1e293b;">Payment Plan ${paymentPlan.name}</h3>
-                <div style="display: grid; gap: 0.5rem;">
-                    ${paymentPlan.stages.map(stage => `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8fafc; border-radius: 6px;">
-                            <span style="font-weight: 500;">${stage.stage}</span>
-                            <div style="text-align: right;">
-                                <div style="font-weight: 600; color: #2563eb;">${stage.percentage}%</div>
-                                <div style="font-size: 0.9rem; color: #64748b;">₹${formatPrice(property.price * stage.percentage / 100)}</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 2rem;">
-                <h3 style="margin-bottom: 1rem; color: #1e293b;">Tower Information</h3>
-                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px;">
-                    <h4 style="color: #2563eb; margin-bottom: 0.5rem;">${tower.name}</h4>
-                    <p style="color: #64748b; margin-bottom: 1rem;">${tower.description}</p>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                        <div>
-                            <strong>Total Floors:</strong> ${tower.floors}
-                        </div>
-                        <div>
-                            <strong>Units per Floor:</strong> ${tower.unitsPerFloor}
-                        </div>
-                    </div>
-                    <div>
-                        <strong>Amenities:</strong>
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
-                            ${tower.amenities.map(amenity => `
-                                <span style="background: #2563eb; color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem;">${amenity}</span>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="display: flex; gap: 1rem;">
-                <button style="flex: 1; padding: 1rem; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="contactForProperty('${property.unitNumber}')">
-                    <i class="fas fa-phone"></i> Contact for This Property
-                </button>
-                <button style="flex: 1; padding: 1rem; background: #059669; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="scheduleVisit('${property.unitNumber}')">
-                    <i class="fas fa-calendar"></i> Schedule Site Visit
-                </button>
-            </div>
-        </div>
-    `;
-    
-    modal.style.display = 'block';
-}
-
-// Close modal
-function closeModal() {
-    document.getElementById('propertyModal').style.display = 'none';
-}
-
-// Contact for specific property
-function contactForProperty(unitNumber) {
-    alert(`Thank you for your interest in ${unitNumber}. Our sales team will contact you shortly!`);
-    // Here you would typically integrate with your CRM or send an email
-}
-
-// Schedule site visit
-function scheduleVisit(unitNumber) {
-    alert(`Site visit request for ${unitNumber} has been submitted. We'll contact you to confirm the appointment.`);
-    // Here you would typically integrate with your booking system
-}
-
-// Submit inquiry form
-function submitInquiry(event) {
-    event.preventDefault();
-    alert('Thank you for your inquiry! We will get back to you within 24 hours.');
-    event.target.reset();
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modal = document.getElementById('propertyModal');
-    if (event.target === modal) {
-        closeModal();
-    }
-}
+};
