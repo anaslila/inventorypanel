@@ -386,6 +386,92 @@
         .band-2nd { border-left-color: var(--warning-color); }
         .band-3rd { border-left-color: var(--danger-color); }
 
+        /* CLICKABLE CARDS & PAYMENT STYLES */
+        .clickable-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clickable-card:hover {
+            transform: translateY(-12px) !important;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25) !important;
+        }
+
+        .payment-breakdown {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .breakdown-card {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .breakdown-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .breakdown-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            color: var(--success-color);
+        }
+
+        .timeline-section {
+            margin-top: 30px;
+        }
+
+        .timeline-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .timeline-item {
+            background: var(--bg-secondary);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--warning-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timeline-stage {
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .timeline-amount {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--success-color);
+        }
+
+        .timeline-description {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
         /* MODALS */
         .modal {
             display: none;
@@ -578,6 +664,15 @@
             .calculator-grid {
                 grid-template-columns: 1fr;
             }
+
+            .payment-breakdown {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
 
         /* PWA STYLES */
@@ -691,6 +786,19 @@
         <!-- PAGINATION -->
         <div class="pagination" id="pagination">
             <!-- Pagination will be populated by JavaScript -->
+        </div>
+
+        <!-- PAYMENT PLAN MODAL -->
+        <div class="modal" id="paymentModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="paymentModalTitle">Payment Plan - A 101</h2>
+                    <button class="close-btn" onclick="closeModal('paymentModal')">&times;</button>
+                </div>
+                <div id="paymentContent">
+                    <!-- Payment details will be loaded here -->
+                </div>
+            </div>
         </div>
 
         <!-- COMPARISON MODAL -->
@@ -960,16 +1068,16 @@
             }
 
             grid.innerHTML = pageData.map(flat => `
-                <div class="flat-card ${getBandClass(flat.band)}" data-tower="${flat.tower}" data-type="${flat.typology}" data-band="${flat.band}">
+                <div class="flat-card ${getBandClass(flat.band)} clickable-card" data-tower="${flat.tower}" data-type="${flat.typology}" data-band="${flat.band}" onclick="openPaymentPlan('${flat.unitNumber}')">
                     <div class="flat-header">
                         <div class="flat-number">${flat.unitNumber}</div>
                         <div class="flat-tower">${flat.tower}</div>
                     </div>
                     <div class="flat-actions">
-                        <button class="action-btn ${favorites.includes(flat.unitNumber) ? 'active' : ''}" onclick="toggleFavorite('${flat.unitNumber}')">
+                        <button class="action-btn ${favorites.includes(flat.unitNumber) ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${flat.unitNumber}')">
                             ${favorites.includes(flat.unitNumber) ? '❤️' : '🤍'} Favorite
                         </button>
-                        <button class="action-btn ${compareList.includes(flat.unitNumber) ? 'active' : ''}" onclick="toggleCompare('${flat.unitNumber}')">
+                        <button class="action-btn ${compareList.includes(flat.unitNumber) ? 'active' : ''}" onclick="event.stopPropagation(); toggleCompare('${flat.unitNumber}')">
                             ⚖️ Compare
                         </button>
                     </div>
@@ -1004,6 +1112,9 @@
                                 <span class="detail-value price">${formatPrice(flat.allInclusiveAmount)}</span>
                             </div>
                         </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px; font-size: 12px; color: var(--text-secondary);">
+                        👆 Click for Payment Plan Details
                     </div>
                 </div>
             `).join('');
@@ -1079,6 +1190,171 @@
 
             document.getElementById('bhk1Count').textContent = bhk1;
             document.getElementById('bhk2Count').textContent = bhk2;
+        }
+
+        // PAYMENT PLAN FUNCTION
+        function openPaymentPlan(unitNumber) {
+            const unit = allPropertyData.find(u => u.unitNumber === unitNumber);
+            if (!unit) return;
+
+            // Calculate exact charges based on your rules
+            const basePrice = unit.price;
+            const stampDuty = Math.floor(basePrice * 0.07); // 7%
+            const gst = Math.floor(basePrice * 0.05); // 5%
+            const registration = 30000; // Fixed
+            const otherCharges = unit.typology === '1BHK' ? 487900 : 637200; // As per your data
+            const possessionCharges = Math.floor(unit.carpetArea * (unit.typology === '1BHK' ? 220 : 225)); // Estimated
+            
+            const allInclusiveAmount = basePrice + stampDuty + gst + registration + otherCharges + possessionCharges;
+
+            // Payment plan based on tower
+            const isAsterBlu = unit.tower === 'Aster' || unit.tower === 'Blu';
+            const paymentPlan = isAsterBlu ? '9:11:80' : '9:91';
+            
+            // Calculate payment amounts
+            let stage1Amount, stage2Amount, stage3Amount;
+            
+            if (isAsterBlu) {
+                // 9:11:80 plan
+                stage1Amount = Math.floor(allInclusiveAmount * 0.09); // 9%
+                stage2Amount = Math.floor(allInclusiveAmount * 0.11); // 11%
+                stage3Amount = allInclusiveAmount - stage1Amount - stage2Amount; // 80%
+            } else {
+                // 9:91 plan
+                stage1Amount = Math.floor(allInclusiveAmount * 0.09); // 9%
+                stage3Amount = allInclusiveAmount - stage1Amount; // 91%
+                stage2Amount = 0;
+            }
+
+            document.getElementById('paymentModalTitle').textContent = `Payment Plan - ${unitNumber}`;
+            
+            let paymentHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h3>${unit.tower} Tower | ${unit.typology} | Floor ${unit.floorNumber}</h3>
+                    <p><strong>Carpet Area:</strong> ${unit.carpetArea} sq ft | <strong>Facing:</strong> ${unit.facing}</p>
+                </div>
+
+                <div class="payment-breakdown">
+                    <div class="breakdown-card">
+                        <div class="breakdown-title">💰 Price Breakdown</div>
+                        <div class="breakdown-row">
+                            <span>Base Price:</span>
+                            <span>${formatPrice(basePrice)}</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Stamp Duty (7%):</span>
+                            <span>${formatPrice(stampDuty)}</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>GST (5%):</span>
+                            <span>${formatPrice(gst)}</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Registration:</span>
+                            <span>${formatPrice(registration)}</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Other Charges:</span>
+                            <span>${formatPrice(otherCharges)}</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Possession Charges:</span>
+                            <span>${formatPrice(possessionCharges)}</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span><strong>Total Amount:</strong></span>
+                            <span><strong>${formatPrice(allInclusiveAmount)}</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="breakdown-card">
+                        <div class="breakdown-title">📋 Payment Summary</div>
+                        <div class="breakdown-row">
+                            <span>Payment Plan:</span>
+                            <span><strong>(${paymentPlan})</strong></span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Tower:</span>
+                            <span>${unit.tower}</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Band:</span>
+                            <span>${unit.band}</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Unit Type:</span>
+                            <span>${unit.typology}</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span><strong>Ready to Pay:</strong></span>
+                            <span><strong>${formatPrice(stage1Amount)}</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-section">
+                    <div class="timeline-title">💳 Payment Timeline - ${paymentPlan} Plan</div>
+            `;
+
+            if (isAsterBlu) {
+                // 9:11:80 timeline
+                paymentHTML += `
+                    <div class="timeline-item">
+                        <div>
+                            <div class="timeline-stage">Stage 1: Booking Amount (9%)</div>
+                            <div class="timeline-description">Due: At the time of booking</div>
+                        </div>
+                        <div class="timeline-amount">${formatPrice(stage1Amount)}</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div>
+                            <div class="timeline-stage">Stage 2: Construction Linked (11%)</div>
+                            <div class="timeline-description">Due: During construction milestones</div>
+                        </div>
+                        <div class="timeline-amount">${formatPrice(stage2Amount)}</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div>
+                            <div class="timeline-stage">Stage 3: On Possession (80%)</div>
+                            <div class="timeline-description">Due: At the time of possession</div>
+                        </div>
+                        <div class="timeline-amount">${formatPrice(stage3Amount)}</div>
+                    </div>
+                `;
+            } else {
+                // 9:91 timeline
+                paymentHTML += `
+                    <div class="timeline-item">
+                        <div>
+                            <div class="timeline-stage">Stage 1: Booking Amount (9%)</div>
+                            <div class="timeline-description">Due: At the time of booking</div>
+                        </div>
+                        <div class="timeline-amount">${formatPrice(stage1Amount)}</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div>
+                            <div class="timeline-stage">Stage 2: On Possession (91%)</div>
+                            <div class="timeline-description">Due: At the time of possession</div>
+                        </div>
+                        <div class="timeline-amount">${formatPrice(stage3Amount)}</div>
+                    </div>
+                `;
+            }
+
+            paymentHTML += `
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px; padding: 20px; background: var(--bg-secondary); border-radius: 10px;">
+                    <h4 style="color: var(--success-color); margin-bottom: 10px;">🎯 Ready to Book?</h4>
+                    <p style="margin-bottom: 15px;">Start with just <strong>${formatPrice(stage1Amount)}</strong> to secure this unit!</p>
+                    <button class="action-btn" style="background: var(--success-color); color: white; padding: 12px 24px; font-size: 16px;">
+                        📞 Contact Sales Team
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('paymentContent').innerHTML = paymentHTML;
+            openModal('paymentModal');
         }
 
         // THEME TOGGLE
@@ -1276,7 +1552,7 @@
 
         // CLOSE MODALS ON OUTSIDE CLICK
         window.onclick = function(event) {
-            const modals = ['comparisonModal', 'favoritesModal', 'calculatorModal'];
+            const modals = ['comparisonModal', 'favoritesModal', 'calculatorModal', 'paymentModal'];
             modals.forEach(modalId => {
                 const modal = document.getElementById(modalId);
                 if (event.target === modal) {
