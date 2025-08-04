@@ -585,6 +585,19 @@
             margin-bottom: 10px;
         }
 
+        /* AMOUNT IN WORDS STYLING */
+        .amount-in-words {
+            background: linear-gradient(135deg, #e8f5e8, #d4f4d4);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--success-color);
+            font-weight: 600;
+            margin-top: 5px;
+            text-align: center;
+            border: 1px solid rgba(39, 174, 96, 0.2);
+        }
+
         /* PAGINATION */
         .pagination {
             display: flex;
@@ -827,48 +840,46 @@
             </div>
         </div>
 
-<!-- EMI CALCULATOR MODAL -->
-<div class="modal" id="calculatorModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title">EMI Calculator</h2>
-            <button class="close-btn" onclick="closeModal('calculatorModal')">&times;</button>
-        </div>
-        <div class="calculator-grid">
-            <div>
-                <div class="calc-input-group">
-                    <label for="loanAmount">Loan Amount (₹)</label>
-                    <input type="text" id="loanAmount" class="calc-input" value="50,00,000" oninput="formatAndCalculate(this, 'amount')" placeholder="Enter amount in ₹">
-                    <small style="color: var(--text-secondary); font-size: 11px;">Example: 1,00,00,000 (1 Crore)</small>
+        <!-- EMI CALCULATOR MODAL -->
+        <div class="modal" id="calculatorModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">EMI Calculator</h2>
+                    <button class="close-btn" onclick="closeModal('calculatorModal')">&times;</button>
                 </div>
-                <div class="calc-input-group">
-                    <label for="interestRate">Interest Rate (% per annum)</label>
-                    <input type="number" id="interestRate" class="calc-input" value="8.5" step="0.1" oninput="calculateEMI()">
-                    <small style="color: var(--text-secondary); font-size: 11px;">Current home loan rates: 8.5% - 9.5%</small>
-                </div>
-                <div class="calc-input-group">
-                    <label for="loanTenure">Loan Tenure (Years)</label>
-                    <input type="number" id="loanTenure" class="calc-input" value="20" oninput="calculateEMI()">
-                    <small style="color: var(--text-secondary); font-size: 11px;">Typical range: 10-30 years</small>
+                <div class="calculator-grid">
+                    <div>
+                        <div class="calc-input-group">
+                            <label for="loanAmount">Loan Amount (₹)</label>
+                            <input type="text" id="loanAmount" class="calc-input" value="0" oninput="formatAndCalculate(this)" placeholder="Enter amount in ₹">
+                            <div class="amount-in-words" id="loanAmountWords">Rupees Zero Only</div>
+                        </div>
+                        <div class="calc-input-group">
+                            <label for="interestRate">Interest Rate (% per annum)</label>
+                            <input type="number" id="interestRate" class="calc-input" value="0" step="0.1" oninput="calculateEMI()">
+                        </div>
+                        <div class="calc-input-group">
+                            <label for="loanTenure">Loan Tenure (Years)</label>
+                            <input type="number" id="loanTenure" class="calc-input" value="0" oninput="calculateEMI()">
+                        </div>
+                    </div>
+                    <div class="calc-result">
+                        <h3>Monthly EMI</h3>
+                        <div class="emi-amount" id="emiAmount">₹0</div>
+                        <div class="amount-in-words" id="emiAmountWords">Rupees Zero Only</div>
+                        <div style="margin: 15px 0;">
+                            <strong>Total Amount: </strong><span id="totalAmount">₹0</span>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <strong>Total Interest: </strong><span id="totalInterest">₹0</span>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <strong>Principal: </strong><span id="principalAmount">₹0</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="calc-result">
-                <h3>Monthly EMI</h3>
-                <div class="emi-amount" id="emiAmount">₹43,391</div>
-                <div style="margin: 10px 0;">
-                    <strong>Total Amount: </strong><span id="totalAmount">₹1,04,13,840</span>
-                </div>
-                <div style="margin: 10px 0;">
-                    <strong>Total Interest: </strong><span id="totalInterest">₹54,13,840</span>
-                </div>
-                <div style="margin: 10px 0;">
-                    <strong>Principal: </strong><span id="principalAmount">₹50,00,000</span>
-                </div>
-            </div>
         </div>
-    </div>
-</div>
-
 
         <!-- FOOTER -->
         <div class="footer">
@@ -1016,6 +1027,121 @@
             } else {
                 return '₹' + price.toLocaleString();
             }
+        }
+
+        // INDIAN NUMBER FORMATTING
+        function formatIndianNumber(num) {
+            if (!num || num === '0' || num === 0) return '0';
+            
+            // Convert to string and remove existing commas
+            let numStr = num.toString().replace(/,/g, '');
+            
+            // Check if it's a valid number
+            if (isNaN(numStr)) return num;
+            
+            // Split by decimal point
+            let parts = numStr.split('.');
+            let integerPart = parts[0];
+            let decimalPart = parts[1] ? '.' + parts[1] : '';
+            
+            // Apply Indian formatting (lakhs and crores)
+            if (integerPart.length > 3) {
+                // First, add comma before last 3 digits
+                let lastThree = integerPart.slice(-3);
+                let otherNumbers = integerPart.slice(0, -3);
+                
+                // Then add comma every 2 digits for the rest
+                if (otherNumbers !== '') {
+                    lastThree = ',' + lastThree;
+                }
+                
+                // Add commas every 2 digits from right to left
+                let formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+                return formatted + decimalPart;
+            }
+            
+            return integerPart + decimalPart;
+        }
+
+        function parseIndianNumber(formattedNum) {
+            // Remove commas and convert to number
+            return parseFloat(formattedNum.replace(/,/g, '')) || 0;
+        }
+
+        // CONVERT NUMBER TO WORDS (INDIAN STYLE)
+        function numberToWords(num) {
+            if (num === 0 || !num) return 'Rupees Zero Only';
+
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+            const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+            function convertHundreds(n) {
+                let result = '';
+                if (n > 99) {
+                    result += ones[Math.floor(n / 100)] + ' Hundred ';
+                    n %= 100;
+                }
+                if (n > 19) {
+                    result += tens[Math.floor(n / 10)] + ' ';
+                    n %= 10;
+                }
+                if (n > 9) {
+                    result += teens[n - 10] + ' ';
+                    n = 0;
+                }
+                if (n > 0) {
+                    result += ones[n] + ' ';
+                }
+                return result;
+            }
+
+            let result = 'Rupees ';
+            
+            // Handle crores
+            if (num >= 10000000) {
+                result += convertHundreds(Math.floor(num / 10000000)) + 'Crore ';
+                num %= 10000000;
+            }
+            
+            // Handle lakhs
+            if (num >= 100000) {
+                result += convertHundreds(Math.floor(num / 100000)) + 'Lakh ';
+                num %= 100000;
+            }
+            
+            // Handle thousands
+            if (num >= 1000) {
+                result += convertHundreds(Math.floor(num / 1000)) + 'Thousand ';
+                num %= 1000;
+            }
+            
+            // Handle remaining hundreds, tens, ones
+            if (num > 0) {
+                result += convertHundreds(num);
+            }
+            
+            return result.trim() + ' Only';
+        }
+
+        function formatAndCalculate(input) {
+            let value = input.value;
+            
+            // Remove non-digit characters except decimal point
+            value = value.replace(/[^\d.]/g, '');
+            
+            // Format the number in Indian style
+            let formatted = formatIndianNumber(value);
+            
+            // Update the input value
+            input.value = formatted;
+            
+            // Convert to words and update
+            const numValue = parseIndianNumber(formatted);
+            document.getElementById('loanAmountWords').textContent = numberToWords(numValue);
+            
+            // Calculate EMI
+            calculateEMI();
         }
 
         // GET BAND CLASS
@@ -1484,7 +1610,9 @@
         }
 
         function calculateEMI() {
-            const principal = parseFloat(document.getElementById('loanAmount').value) || 0;
+            // Parse Indian formatted number
+            const loanAmountInput = document.getElementById('loanAmount').value;
+            const principal = parseIndianNumber(loanAmountInput);
             const rate = parseFloat(document.getElementById('interestRate').value) / 100 / 12 || 0;
             const tenure = parseFloat(document.getElementById('loanTenure').value) * 12 || 0;
 
@@ -1493,9 +1621,19 @@
                 const totalAmount = emi * tenure;
                 const totalInterest = totalAmount - principal;
 
+                // Format all amounts and convert to words
                 document.getElementById('emiAmount').textContent = formatPrice(Math.round(emi));
+                document.getElementById('emiAmountWords').textContent = numberToWords(Math.round(emi));
                 document.getElementById('totalAmount').textContent = formatPrice(Math.round(totalAmount));
                 document.getElementById('totalInterest').textContent = formatPrice(Math.round(totalInterest));
+                document.getElementById('principalAmount').textContent = formatPrice(Math.round(principal));
+            } else {
+                // Show default values if inputs are invalid
+                document.getElementById('emiAmount').textContent = '₹0';
+                document.getElementById('emiAmountWords').textContent = 'Rupees Zero Only';
+                document.getElementById('totalAmount').textContent = '₹0';
+                document.getElementById('totalInterest').textContent = '₹0';
+                document.getElementById('principalAmount').textContent = '₹0';
             }
         }
 
