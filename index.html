@@ -99,7 +99,7 @@
 
         .header-actions {
             display: flex;
-            gap: 15px;
+            gap: 8px;
             align-items: center;
         }
 
@@ -107,14 +107,15 @@
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px 16px;
+            padding: 10px 12px;
             border-radius: 8px;
             cursor: pointer;
             font-family: 'Verdana', sans-serif;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
             transition: all 0.3s ease;
             position: relative;
+            min-width: 70px;
         }
 
         .theme-toggle:hover, .favorites-btn:hover, .compare-btn:hover, .calculator-btn:hover {
@@ -124,14 +125,14 @@
 
         .compare-count, .favorites-count {
             position: absolute;
-            top: -8px;
-            right: -8px;
+            top: -6px;
+            right: -6px;
             background: var(--danger-color);
             color: white;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -176,7 +177,7 @@
 
         .search-container {
             flex: 1;
-            max-width: 350px;
+            max-width: 300px;
             position: relative;
         }
 
@@ -204,6 +205,39 @@
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* NUMEROLOGY SEARCH */
+        .numerology-container {
+            max-width: 200px;
+            position: relative;
+        }
+
+        .numerology-input {
+            width: 100%;
+            padding: 12px 45px 12px 20px;
+            border: 2px solid var(--warning-color);
+            border-radius: 25px;
+            font-size: 14px;
+            font-family: 'Verdana', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .numerology-input:focus {
+            outline: none;
+            border-color: var(--warning-color);
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.1);
+        }
+
+        .numerology-icon {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--warning-color);
             font-size: 16px;
         }
 
@@ -297,6 +331,23 @@
             font-size: 22px;
             font-weight: bold;
             color: var(--text-primary);
+            position: relative;
+        }
+
+        .numerology-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--warning-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
         }
 
         .flat-tower {
@@ -650,20 +701,30 @@
             .header {
                 flex-direction: column;
                 text-align: center;
+                gap: 15px;
             }
             
             .header-actions {
-                margin-top: 15px;
+                gap: 5px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .theme-toggle, .favorites-btn, .compare-btn, .calculator-btn {
+                padding: 8px 10px;
+                font-size: 11px;
+                min-width: 60px;
             }
             
             .nav-section {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 10px;
             }
             
-            .search-container {
+            .search-container, .numerology-container {
                 max-width: none;
-                margin-top: 15px;
+                margin-top: 10px;
             }
             
             .inventory-grid {
@@ -729,9 +790,9 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="calculator-btn" onclick="openCalculator()">🧮 EMI Calculator</button>
+                <button class="calculator-btn" onclick="openCalculator()">🧮 EMI</button>
                 <button class="favorites-btn" onclick="openFavorites()">
-                    ❤️ Favorites
+                    ❤️ Fav
                     <span class="favorites-count" id="favoritesCount">0</span>
                 </button>
                 <button class="compare-btn" onclick="openComparison()">
@@ -774,6 +835,11 @@
             <div class="search-container">
                 <input type="text" class="search-input" placeholder="Search by unit number, price, or area..." id="searchInput" oninput="filterFlats()">
                 <span class="search-icon">🔍</span>
+            </div>
+
+            <div class="numerology-container">
+                <input type="number" class="numerology-input" placeholder="Lucky Number (1-9)" id="numerologyInput" min="1" max="9" oninput="filterByNumerology()">
+                <span class="numerology-icon">🔢</span>
             </div>
         </div>
 
@@ -856,11 +922,11 @@
                         </div>
                         <div class="calc-input-group">
                             <label for="interestRate">Interest Rate (% per annum)</label>
-                            <input type="number" id="interestRate" class="calc-input" value="8.5" step="0.1" oninput="calculateEMI()">
+                            <input type="number" id="interestRate" class="calc-input" value="" step="0.1" oninput="calculateEMI()">
                         </div>
                         <div class="calc-input-group">
                             <label for="loanTenure">Loan Tenure (Years)</label>
-                            <input type="number" id="loanTenure" class="calc-input" value="15" oninput="calculateEMI()">
+                            <input type="number" id="loanTenure" class="calc-input" value="" oninput="calculateEMI()">
                         </div>
                     </div>
                     <div class="calc-result">
@@ -1017,6 +1083,25 @@
         // FAVORITES & COMPARE ARRAYS
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
         let compareList = JSON.parse(localStorage.getItem('compareList')) || [];
+
+        // NUMEROLOGY CALCULATION
+        function calculateNumerologySum(unitNumber) {
+            // Extract only numbers from unit number
+            const numbers = unitNumber.replace(/[^0-9]/g, '');
+            let sum = 0;
+            
+            // Sum all digits
+            for (let digit of numbers) {
+                sum += parseInt(digit);
+            }
+            
+            // Reduce to single digit
+            while (sum > 9) {
+                sum = sum.toString().split('').reduce((acc, digit) => acc + parseInt(digit), 0);
+            }
+            
+            return sum;
+        }
 
         // FORMAT PRICE
         function formatPrice(price) {
@@ -1196,12 +1281,40 @@
             document.getElementById('compareCount').textContent = compareList.length;
         }
 
+        // FILTER BY NUMEROLOGY
+        function filterByNumerology() {
+            const luckyNumber = parseInt(document.getElementById('numerologyInput').value);
+            
+            if (!luckyNumber || luckyNumber < 1 || luckyNumber > 9) {
+                // If no lucky number, show all data
+                displayedData = [...allPropertyData];
+            } else {
+                // Filter by numerology sum
+                displayedData = allPropertyData.filter(flat => {
+                    return calculateNumerologySum(flat.unitNumber) === luckyNumber;
+                });
+            }
+            
+            // Clear other filters when numerology is used
+            if (luckyNumber) {
+                document.getElementById('towerFilter').value = 'all';
+                document.getElementById('typeFilter').value = 'all';
+                document.getElementById('bandFilter').value = 'all';
+                document.getElementById('searchInput').value = '';
+            }
+            
+            currentPage = 1;
+            renderFlats(displayedData);
+            updateStats();
+        }
+
         // RENDER FLATS WITH PAGINATION
         function renderFlats(data) {
             const grid = document.getElementById('inventoryGrid');
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
             const pageData = data.slice(startIndex, endIndex);
+            const luckyNumber = parseInt(document.getElementById('numerologyInput').value) || 0;
             
             if (pageData.length === 0) {
                 grid.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary); font-size: 18px; grid-column: 1 / -1;">No properties found matching your criteria.</div>';
@@ -1209,10 +1322,17 @@
                 return;
             }
 
-            grid.innerHTML = pageData.map(flat => `
+            grid.innerHTML = pageData.map(flat => {
+                const numerologySum = calculateNumerologySum(flat.unitNumber);
+                const showNumerologyBadge = luckyNumber && numerologySum === luckyNumber;
+                
+                return `
                 <div class="flat-card ${getBandClass(flat.band)} clickable-card" data-tower="${flat.tower}" data-type="${flat.typology}" data-band="${flat.band}" onclick="openPaymentPlan('${flat.unitNumber}')">
                     <div class="flat-header">
-                        <div class="flat-number">${flat.unitNumber}</div>
+                        <div class="flat-number">
+                            ${flat.unitNumber}
+                            ${showNumerologyBadge ? `<span class="numerology-badge">${numerologySum}</span>` : ''}
+                        </div>
                         <div class="flat-tower">${flat.tower}</div>
                     </div>
                     <div class="flat-actions">
@@ -1244,6 +1364,12 @@
                             <span class="detail-label">BAND:</span>
                             <span class="detail-value">${flat.band}</span>
                         </div>
+                        ${!showNumerologyBadge ? `
+                        <div class="detail-row">
+                            <span class="detail-label">LUCKY NUMBER:</span>
+                            <span class="detail-value" style="color: var(--warning-color); font-weight: bold;">${numerologySum}</span>
+                        </div>
+                        ` : ''}
                         <div class="price-row">
                             <div class="detail-row">
                                 <span class="detail-label">BASE PRICE:</span>
@@ -1259,7 +1385,8 @@
                         👆 Click for Payment Plan Details
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
             renderPagination(data.length);
         }
@@ -1306,6 +1433,11 @@
             const typeFilter = document.getElementById('typeFilter').value;
             const bandFilter = document.getElementById('bandFilter').value;
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            // Clear numerology when using other filters
+            if (towerFilter !== 'all' || typeFilter !== 'all' || bandFilter !== 'all' || searchTerm !== '') {
+                document.getElementById('numerologyInput').value = '';
+            }
 
             displayedData = allPropertyData.filter(flat => {
                 const matchesTower = towerFilter === 'all' || flat.tower === towerFilter;
@@ -1368,12 +1500,17 @@
                 stage2Amount = 0;
             }
 
-            document.getElementById('paymentModalTitle').textContent = `Payment Plan - ${unitNumber}`;
+            const numerologySum = calculateNumerologySum(unit.unitNumber);
+
+            document.getElementById('paymentModalTitle').textContent = `Payment Plan - ${unitNumber} (Lucky Number: ${numerologySum})`;
             
             let paymentHTML = `
                 <div style="text-align: center; margin-bottom: 20px;">
                     <h3>${unit.tower} Tower | ${unit.typology} | Floor ${unit.floorNumber}</h3>
                     <p><strong>Carpet Area:</strong> ${unit.carpetArea} sq ft | <strong>Facing:</strong> ${unit.facing}</p>
+                    <div style="background: var(--warning-color); color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-top: 10px;">
+                        <strong>🔢 Lucky Number: ${numerologySum}</strong>
+                    </div>
                 </div>
 
                 <div class="payment-breakdown">
@@ -1488,7 +1625,7 @@
                 
                 <div style="text-align: center; margin-top: 30px; padding: 20px; background: var(--bg-secondary); border-radius: 10px;">
                     <h4 style="color: var(--success-color); margin-bottom: 10px;">🎯 Ready to Book?</h4>
-                    <p style="margin-bottom: 15px;">Start with just <strong>${formatPrice(stage1Amount)}</strong> to secure this unit!</p>
+                    <p style="margin-bottom: 15px;">Start with just <strong>${formatPrice(stage1Amount)}</strong> to secure this lucky unit!</p>
                     <button class="action-btn" style="background: var(--success-color); color: white; padding: 12px 24px; font-size: 16px;">
                         📞 Contact Sales Team
                     </button>
@@ -1557,6 +1694,14 @@
                 comparisonHTML += '</tr>';
             });
 
+            // Add numerology row
+            comparisonHTML += `<tr><td><strong>Lucky Number</strong></td>`;
+            compareUnits.forEach(unit => {
+                const numerologySum = calculateNumerologySum(unit.unitNumber);
+                comparisonHTML += `<td style="color: var(--warning-color); font-weight: bold;">${numerologySum}</td>`;
+            });
+            comparisonHTML += '</tr>';
+
             comparisonHTML += '</tbody></table>';
             comparisonHTML += '<br><button class="action-btn" onclick="clearComparison()">Clear Comparison</button>';
 
@@ -1581,9 +1726,10 @@
                 let favoritesHTML = '<div style="display: grid; gap: 15px;">';
                 
                 favoriteUnits.forEach(unit => {
+                    const numerologySum = calculateNumerologySum(unit.unitNumber);
                     favoritesHTML += `
                         <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
-                            <h4>${unit.unitNumber} - ${unit.tower} Tower</h4>
+                            <h4>${unit.unitNumber} - ${unit.tower} Tower <span style="color: var(--warning-color);">(Lucky: ${numerologySum})</span></h4>
                             <p><strong>Type:</strong> ${unit.typology} | <strong>Area:</strong> ${unit.carpetArea} sq ft</p>
                             <p><strong>Price:</strong> ${formatPrice(unit.price)}</p>
                             <button class="action-btn" onclick="removeFavorite('${unit.unitNumber}')">Remove</button>
