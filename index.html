@@ -1526,14 +1526,14 @@
                         <div class="timeline-item">
                             <div>
                                 <div class="timeline-stage">Stage 3: On Possession (80%)</div>
-                                <div class="timeline-description">Due: Dec 2026 - Possession</div>
+                                <div class="timeline-description">Due: Dec 2027 - Possession</div>
                             </div>
                             <div class="timeline-amount">${formatPrice(stage3Amount)}</div>
                         </div>
                     `;
                     
                     // Calculate savings
-                    const savings80 = calculateSavings(allInclusiveAmount, 80, 18); // 1.5 years
+                    const savings80 = calculateSavings(allInclusiveAmount, 80, 24); // 2 years
                     const savings11 = calculateSavings(allInclusiveAmount, 11, 12); // 1 year
                     
                     timelineHTML += `
@@ -1542,7 +1542,7 @@
                             <div class="savings-grid">
                                 <div class="savings-card">
                                     <div class="savings-amount">${formatPrice(savings80.savedAmount)}</div>
-                                    <div class="savings-label">Amount Saved (80% for 1.5 years)</div>
+                                    <div class="savings-label">Amount Saved (80% for 2 years)</div>
                                 </div>
                                 <div class="savings-card">
                                     <div class="savings-amount">${formatPrice(savings80.interestEarned + savings11.interestEarned)}</div>
@@ -1583,7 +1583,7 @@
                     `;
                     
                     // Calculate savings
-                    const savings91 = calculateSavings(allInclusiveAmount, 91, 15); // 1.25 years
+                    const savings91 = calculateSavings(allInclusiveAmount, 91, 9); // 9 months
                     
                     timelineHTML += `
                         <div class="savings-section">
@@ -1591,7 +1591,7 @@
                             <div class="savings-grid">
                                 <div class="savings-card">
                                     <div class="savings-amount">${formatPrice(savings91.savedAmount)}</div>
-                                    <div class="savings-label">Amount Saved (91% for 1.25 years)</div>
+                                    <div class="savings-label">Amount Saved (91% for 9 months)</div>
                                 </div>
                                 <div class="savings-card">
                                     <div class="savings-amount">${formatPrice(savings91.interestEarned)}</div>
@@ -1610,17 +1610,16 @@
                     `;
                 }
             } else {
-                // CONSTRUCTION LINKED PLAN
+                // CONSTRUCTION LINKED PLAN - CORRECTED AS REQUESTED
                 if (isAsterBlu) {
-                    // Aster/Blu - 40% due total
-                    const payment1 = Math.floor(allInclusiveAmount * 0.09); // 9% booking
-                    const payment2 = Math.floor(allInclusiveAmount * 0.10); // 10% Oct 2025
-                    const payment3 = Math.floor(allInclusiveAmount * 0.10); // 10% Jan 2026
-                    const payment4 = Math.floor(allInclusiveAmount * 0.05); // 5% Apr 2026
-                    const payment5 = Math.floor(allInclusiveAmount * 0.06); // 6% Jul 2026
-                    const payment6 = allInclusiveAmount - payment1 - payment2 - payment3 - payment4 - payment5; // Rest on possession
-                    
-                    const dueAmount = payment1 + payment2 + payment3 + payment4 + payment5; // Total 40%
+                    // TOWER A & B - NEW CORRECTED SCHEDULE
+                    const p1 = Math.floor(allInclusiveAmount * 0.40); // 40% Booking
+                    const p2 = Math.floor(allInclusiveAmount * 0.10); // 10% Oct 2025
+                    const p3 = Math.floor(allInclusiveAmount * 0.10); // 10% Jan 2026
+                    const p4 = Math.floor(allInclusiveAmount * 0.10); // 10% May 2026
+                    const p5 = Math.floor(allInclusiveAmount * 0.10); // 10% Dec 2026
+                    const p6 = Math.floor(allInclusiveAmount * 0.10); // 10% June 2027
+                    const p7 = Math.floor(allInclusiveAmount * 0.10); // 10% Dec 2027 (Possession)
                     
                     timelineHTML = `
                         <div class="timeline-title">🏗️ Construction Linked Plan</div>
@@ -1630,75 +1629,79 @@
                             <div class="progress-details">
                                 <div class="progress-item">
                                     <div class="progress-percentage">40%</div>
-                                    <div class="progress-label">Total Due Amount</div>
+                                    <div class="progress-label">Booking</div>
                                 </div>
                                 <div class="progress-item">
-                                    <div class="progress-percentage">${formatPrice(dueAmount)}</div>
+                                    <div class="progress-percentage">${formatPrice(p1)}</div>
                                     <div class="progress-label">Amount Due</div>
                                 </div>
                                 <div class="progress-item">
-                                    <div class="progress-percentage">60%</div>
+                                    <div class="progress-percentage">10%</div>
                                     <div class="progress-label">On Possession</div>
                                 </div>
                                 <div class="progress-item">
-                                    <div class="progress-percentage">Dec 2026</div>
-                                    <div class="progress-label">Possession Date</div>
+                                    <div class="progress-percentage">Dec 2027</div>
+                                    <div class="progress-label">Possession</div>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="timeline-item">
                             <div>
-                                <div class="timeline-stage">Payment 1: Booking (9%)</div>
+                                <div class="timeline-stage">Payment 1: Booking (40%)</div>
                                 <div class="timeline-description">Due: At booking</div>
                             </div>
-                            <div class="timeline-amount">${formatPrice(payment1)}</div>
+                            <div class="timeline-amount">${formatPrice(p1)}</div>
                         </div>
                         <div class="timeline-item">
                             <div>
                                 <div class="timeline-stage">Payment 2: Construction Milestone (10%)</div>
                                 <div class="timeline-description">Due: October 2025</div>
                             </div>
-                            <div class="timeline-amount">${formatPrice(payment2)}</div>
+                            <div class="timeline-amount">${formatPrice(p2)}</div>
                         </div>
                         <div class="timeline-item">
                             <div>
                                 <div class="timeline-stage">Payment 3: Construction Milestone (10%)</div>
                                 <div class="timeline-description">Due: January 2026</div>
                             </div>
-                            <div class="timeline-amount">${formatPrice(payment3)}</div>
+                            <div class="timeline-amount">${formatPrice(p3)}</div>
                         </div>
                         <div class="timeline-item">
                             <div>
-                                <div class="timeline-stage">Payment 4: Construction Milestone (5%)</div>
-                                <div class="timeline-description">Due: April 2026</div>
+                                <div class="timeline-stage">Payment 4: Construction Milestone (10%)</div>
+                                <div class="timeline-description">Due: May 2026</div>
                             </div>
-                            <div class="timeline-amount">${formatPrice(payment4)}</div>
+                            <div class="timeline-amount">${formatPrice(p4)}</div>
                         </div>
                         <div class="timeline-item">
                             <div>
-                                <div class="timeline-stage">Payment 5: Construction Milestone (6%)</div>
-                                <div class="timeline-description">Due: July 2026</div>
-                            </div>
-                            <div class="timeline-amount">${formatPrice(payment5)}</div>
-                        </div>
-                        <div class="timeline-item">
-                            <div>
-                                <div class="timeline-stage">Final Payment: Possession (60%)</div>
+                                <div class="timeline-stage">Payment 5: Construction Milestone (10%)</div>
                                 <div class="timeline-description">Due: December 2026</div>
                             </div>
-                            <div class="timeline-amount">${formatPrice(payment6)}</div>
+                            <div class="timeline-amount">${formatPrice(p5)}</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div>
+                                <div class="timeline-stage">Payment 6: Construction Milestone (10%)</div>
+                                <div class="timeline-description">Due: June 2027</div>
+                            </div>
+                            <div class="timeline-amount">${formatPrice(p6)}</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div>
+                                <div class="timeline-stage">Final Payment: Possession (10%)</div>
+                                <div class="timeline-description">Due: December 2027</div>
+                            </div>
+                            <div class="timeline-amount">${formatPrice(p7)}</div>
                         </div>
                     `;
                 } else {
-                    // Clove/Dion - 70% due total
-                    const payment1 = Math.floor(allInclusiveAmount * 0.09); // 9% booking
-                    const payment2 = Math.floor(allInclusiveAmount * 0.10); // 10% Sep 2025
-                    const payment3 = Math.floor(allInclusiveAmount * 0.15); // 15% Jan 2026
-                    const payment4 = Math.floor(allInclusiveAmount * 0.36); // 36% more milestones (to reach 70%)
-                    const payment5 = allInclusiveAmount - payment1 - payment2 - payment3 - payment4; // Remaining 30% on possession
-                    
-                    const dueAmount = payment1 + payment2 + payment3 + payment4; // Total 70%
+                    // TOWER C & D - NEW CORRECTED SCHEDULE
+                    const p1 = Math.floor(allInclusiveAmount * 0.70); // 70% Booking
+                    const p2 = Math.floor(allInclusiveAmount * 0.10); // 10% Oct 2025
+                    const p3 = Math.floor(allInclusiveAmount * 0.15); // 15% Jan 2026
+                    const p4 = Math.floor(allInclusiveAmount * 0.05); // 5% May 2026 (Possession)
                     
                     timelineHTML = `
                         <div class="timeline-title">🏗️ Construction Linked Plan</div>
@@ -1708,57 +1711,50 @@
                             <div class="progress-details">
                                 <div class="progress-item">
                                     <div class="progress-percentage">70%</div>
-                                    <div class="progress-label">Total Due Amount</div>
+                                    <div class="progress-label">Booking</div>
                                 </div>
                                 <div class="progress-item">
-                                    <div class="progress-percentage">${formatPrice(dueAmount)}</div>
+                                    <div class="progress-percentage">${formatPrice(p1)}</div>
                                     <div class="progress-label">Amount Due</div>
                                 </div>
                                 <div class="progress-item">
-                                    <div class="progress-percentage">30%</div>
+                                    <div class="progress-percentage">5%</div>
                                     <div class="progress-label">On Possession</div>
                                 </div>
                                 <div class="progress-item">
                                     <div class="progress-percentage">May 2026</div>
-                                    <div class="progress-label">Possession Date</div>
+                                    <div class="progress-label">Possession</div>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="timeline-item">
                             <div>
-                                <div class="timeline-stage">Payment 1: Booking (9%)</div>
+                                <div class="timeline-stage">Payment 1: Booking (70%)</div>
                                 <div class="timeline-description">Due: At booking</div>
                             </div>
-                            <div class="timeline-amount">${formatPrice(payment1)}</div>
+                            <div class="timeline-amount">${formatPrice(p1)}</div>
                         </div>
                         <div class="timeline-item">
                             <div>
                                 <div class="timeline-stage">Payment 2: Construction Milestone (10%)</div>
-                                <div class="timeline-description">Due: September 2025</div>
+                                <div class="timeline-description">Due: October 2025</div>
                             </div>
-                            <div class="timeline-amount">${formatPrice(payment2)}</div>
+                            <div class="timeline-amount">${formatPrice(p2)}</div>
                         </div>
                         <div class="timeline-item">
                             <div>
                                 <div class="timeline-stage">Payment 3: Construction Milestone (15%)</div>
                                 <div class="timeline-description">Due: January 2026</div>
                             </div>
-                            <div class="timeline-amount">${formatPrice(payment3)}</div>
+                            <div class="timeline-amount">${formatPrice(p3)}</div>
                         </div>
                         <div class="timeline-item">
                             <div>
-                                <div class="timeline-stage">Payment 4: Construction Milestones (36%)</div>
-                                <div class="timeline-description">Due: Various stages till April 2026</div>
-                            </div>
-                            <div class="timeline-amount">${formatPrice(payment4)}</div>
-                        </div>
-                        <div class="timeline-item">
-                            <div>
-                                <div class="timeline-stage">Final Payment: Possession (30%)</div>
+                                <div class="timeline-stage">Final Payment: Possession (5%)</div>
                                 <div class="timeline-description">Due: May 2026</div>
                             </div>
-                            <div class="timeline-amount">${formatPrice(payment5)}</div>
+                            <div class="timeline-amount">${formatPrice(p4)}</div>
                         </div>
                     `;
                 }
@@ -2007,7 +2003,7 @@
                         </div>
                         <div class="breakdown-row">
                             <span>Possession:</span>
-                            <span>${isAsterBlu ? 'Dec 2026' : 'May 2026'}</span>
+                            <span>${isAsterBlu ? 'Dec 2027' : 'May 2026'}</span>
                         </div>
                         <div class="breakdown-row">
                             <span><strong>Booking Amount:</strong></span>
@@ -2023,7 +2019,7 @@
                     </div>
                     <div class="plan-tab" onclick="switchPaymentPlan('construction')">
                         <div class="plan-title">Construction Linked Plan</div>
-                        <div class="plan-description">${isAsterBlu ? '40% Due' : '70% Due'}</div>
+                        <div class="plan-description">${isAsterBlu ? '40% Booking + 60% Milestones' : '70% Booking + 30% Milestones'}</div>
                     </div>
                 </div>
 
