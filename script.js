@@ -469,4 +469,90 @@ function calculateEMI() {
         document.getElementById('principalAmount').textContent = '₹0';
     }
 }
+/* ----------  CONSTRUCTION-LINKED PLAN  (CLP)  ---------- */
+} else {   //  currentPlan === 'construction'
+    if (isAsterBlu) {               /*  TOWER A & B  */
+        /*   40 % booking  +  five 10 % calls  + 10 % possession  */
+        const p1 = Math.floor(allInclusiveAmount * 0.40);   // 40 %  – Booking
+        const p2 = Math.floor(allInclusiveAmount * 0.10);   // 10 %  – Oct 2025
+        const p3 = p2;                                      // 10 %  – Jan 2026
+        const p4 = p2;                                      // 10 %  – May 2026
+        const p5 = p2;                                      // 10 %  – Dec 2026
+        const p6 = p2;                                      // 10 %  – Jun 2027
+        const p7 = p2;                                      // 10 %  – Dec 2027 (Possession)
+
+        timelineHTML = `
+            <div class="timeline-title">🏗️ Construction Linked Plan</div>
+
+            <div class="progress-info">
+                <div class="progress-title">📊 Construction Progress Requirements&nbsp;(Tower A & B)</div>
+                <div class="progress-details">
+                    <div class="progress-item">
+                        <div class="progress-percentage">40%</div>
+                        <div class="progress-label">Booking</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-percentage">${formatPrice(p1)}</div>
+                        <div class="progress-label">Amount&nbsp;Due</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-percentage">10%</div>
+                        <div class="progress-label">On&nbsp;Possession</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-percentage">Dec 2027</div>
+                        <div class="progress-label">Possession</div>
+                    </div>
+                </div>
+            </div>
+
+            ${buildRow('Payment 1: Booking (40%)','At booking',p1)}
+            ${buildRow('Payment 2: Construction Milestone (10%)','October 2025',p2)}
+            ${buildRow('Payment 3: Construction Milestone (10%)','January 2026',p3)}
+            ${buildRow('Payment 4: Construction Milestone (10%)','May 2026',p4)}
+            ${buildRow('Payment 5: Construction Milestone (10%)','December 2026',p5)}
+            ${buildRow('Payment 6: Construction Milestone (10%)','June 2027',p6)}
+            ${buildRow('Final Payment: Possession (10%)','December 2027',p7)}
+        `;
+    } else {                         /*  TOWER C & D  */
+        /*   70 % booking  + 10 % + 15 %  + 5 % possession  */
+        const p1 = Math.floor(allInclusiveAmount * 0.70);   // 70 % – Booking
+        const p2 = Math.floor(allInclusiveAmount * 0.10);   // 10 % – Oct 2025
+        const p3 = Math.floor(allInclusiveAmount * 0.15);   // 15 % – Jan 2026
+        const p4 = Math.floor(allInclusiveAmount * 0.05);   // 5 %  – May 2026 (Possession)
+
+        timelineHTML = `
+            <div class="timeline-title">🏗️ Construction Linked Plan</div>
+
+            <div class="progress-info">
+                <div class="progress-title">📊 Construction Progress Requirements&nbsp;(Tower C & D)</div>
+                <div class="progress-details">
+                    <div class="progress-item">
+                        <div class="progress-percentage">70%</div>
+                        <div class="progress-label">Booking</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-percentage">${formatPrice(p1)}</div>
+                        <div class="progress-label">Amount&nbsp;Due</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-percentage">5%</div>
+                        <div class="progress-label">On&nbsp;Possession</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-percentage">May 2026</div>
+                        <div class="progress-label">Possession</div>
+                    </div>
+                </div>
+            </div>
+
+            ${buildRow('Payment 1: Booking (70%)','At booking',p1)}
+            ${buildRow('Payment 2: Construction Milestone (10%)','October 2025',p2)}
+            ${buildRow('Payment 3: Construction Milestone (15%)','January 2026',p3)}
+            ${buildRow('Final Payment: Possession (5%)','May 2026',p4)}
+        `;
+    }
+}
+/* -------------------------------------------------------- */
+
 
