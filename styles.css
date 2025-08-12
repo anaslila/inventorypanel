@@ -91,3 +91,22 @@ body{font-family:'Inter',sans-serif;background:#f0f2f5;padding:20px;color:#333;m
 ::-webkit-scrollbar-track{background:#f1f1f1;border-radius:3px}
 ::-webkit-scrollbar-thumb{background:#4a90e2;border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:#357abd}
+
+/* STATUS STYLES - ADD THIS TO YOUR EXISTING CSS */
+.status-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    z-index: 10;
+}
+
+.status-available { background: #27ae60; color: white; }
+.status-blocked { background: #e74c3c; color: white; }
+.status-hold { background: #f39c12; color: white; }
+.status-booked { background: #9b59b6; color: white; }
+
+.flat-card.status-blocked { opacity: 0.6; pointer-events: none; }
