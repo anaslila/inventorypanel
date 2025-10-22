@@ -1,5 +1,5 @@
 // ============================================
-// MICL Live Inventory Panel - Complete Script
+// MICL Live Inventory Panel - FINAL OPTIMIZED VERSION
 // ============================================
 
 const CONFIG = {
@@ -15,6 +15,7 @@ let filteredData = [];
 let currentUser = null;
 let refreshTimer = null;
 let isLoading = false;
+let activeDropdown = null;
 let dropdownData = { tower: [], typology: [], facing: [] };
 
 // ============================================
@@ -22,9 +23,7 @@ let dropdownData = { tower: [], typology: [], facing: [] };
 // ============================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 MICL Script loaded');
-    console.log('📡 API URL:', CONFIG.API_URL);
-    
+    console.log('🚀 MICL Live Inventory Panel - Ready');
     checkLoginStatus();
     setupEventListeners();
 });
@@ -34,14 +33,12 @@ function checkLoginStatus() {
     if (savedUser) {
         try {
             currentUser = JSON.parse(savedUser);
-            console.log('✅ Found saved user:', currentUser.username);
             showDashboard();
         } catch (error) {
             console.error('Error parsing saved user:', error);
             showLogin();
         }
     } else {
-        console.log('No saved user found');
         showLogin();
     }
 }
@@ -51,12 +48,18 @@ function showLogin() {
     const loginScreen = document.getElementById('loginScreen');
     const dashboardScreen = document.getElementById('dashboardScreen');
     
-    if (loginScreen) loginScreen.classList.add('active');
-    if (dashboardScreen) dashboardScreen.classList.remove('active');
+    if (loginScreen) {
+        loginScreen.style.display = 'flex';
+        loginScreen.classList.add('active');
+    }
+    if (dashboardScreen) {
+        dashboardScreen.style.display = 'none';
+        dashboardScreen.classList.remove('active');
+    }
 }
 
 function showDashboard() {
-    console.log('Showing dashboard for:', currentUser?.username);
+    console.log('🎯 Showing dashboard for:', currentUser?.username);
     
     const loginScreen = document.getElementById('loginScreen');
     const dashboardScreen = document.getElementById('dashboardScreen');
@@ -64,18 +67,23 @@ function showDashboard() {
     
     if (!loginScreen || !dashboardScreen) {
         console.error('❌ Screen elements not found!');
-        alert('Error: Dashboard elements not found. Check your HTML.');
+        alert('ERROR: Dashboard elements not found. Check your HTML.');
         return;
     }
     
+    // FORCE hide login screen
+    loginScreen.style.display = 'none';
     loginScreen.classList.remove('active');
+    
+    // FORCE show dashboard screen
+    dashboardScreen.style.display = 'block';
     dashboardScreen.classList.add('active');
     
     if (userDisplay && currentUser) {
         userDisplay.textContent = currentUser.username;
     }
     
-    console.log('✅ Dashboard displayed');
+    console.log('✅ Dashboard displayed successfully');
     loadInventoryData();
 }
 
@@ -84,42 +92,29 @@ function showDashboard() {
 // ============================================
 
 function setupEventListeners() {
-    // Login form
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-        console.log('✅ Login form listener attached');
-    }
+    document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
+    document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
+    document.getElementById('refreshBtn')?.addEventListener('click', () => {
+        loadInventoryData(true);
+        showToast('Refreshing data...', 'success');
+    });
     
-    // Logout button
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
-    
-    // Refresh button
-    const refreshBtn = document.getElementById('refreshBtn');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => loadInventoryData(true));
-    }
-    
-    // Filter controls
+    // Searchable dropdowns
     setupSearchableDropdown('filterTower', 'towerDropdown', 'tower');
     setupSearchableDropdown('filterTypology', 'typologyDropdown', 'typology');
     setupSearchableDropdown('filterFacing', 'facingDropdown', 'facing');
     
+    // Regular filters
     document.getElementById('filterAvailability')?.addEventListener('change', applyFilters);
     document.getElementById('searchUnit')?.addEventListener('input', debounce(applyFilters, 300));
     
-    // Clear/Reset filters
+    // Buttons
     document.getElementById('clearFiltersBtn')?.addEventListener('click', clearFilters);
     document.getElementById('resetFiltersBtn')?.addEventListener('click', clearFilters);
-    
-    // Export button
     document.getElementById('exportBtn')?.addEventListener('click', exportToCSV);
-    
-    // Modal close
     document.getElementById('closeModal')?.addEventListener('click', closeModal);
+    
+    // Close modal on background click
     document.getElementById('propertyModal')?.addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
@@ -130,6 +125,8 @@ function setupEventListeners() {
             closeAllDropdowns();
         }
     });
+    
+    console.log('✅ Event listeners attached');
 }
 
 // ============================================
@@ -158,7 +155,7 @@ async function handleLogin(e) {
     const url = `${CONFIG.API_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
     
     try {
-        console.log('📡 Sending request...');
+        console.log('📡 Sending login request...');
         const response = await fetch(url);
         console.log('📥 Response status:', response.status);
         
@@ -167,7 +164,7 @@ async function handleLogin(e) {
         }
         
         const result = await response.json();
-        console.log('📦 Result:', result);
+        console.log('📦 Login result:', result);
         
         if (result.success) {
             currentUser = {
@@ -177,8 +174,7 @@ async function handleLogin(e) {
             };
             
             localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(currentUser));
-            console.log('✅ Login successful, showing dashboard...');
-            
+            console.log('✅ Login successful');
             showDashboard();
         } else {
             errorEl.textContent = result.message || 'Invalid credentials';
@@ -206,7 +202,7 @@ function handleLogout() {
         const errorEl = document.getElementById('loginError');
         if (errorEl) errorEl.textContent = '';
         
-        console.log('👋 Logged out');
+        console.log('👋 Logged out successfully');
         showLogin();
         showToast('Logged out successfully', 'success');
     }
@@ -218,7 +214,7 @@ function handleLogout() {
 
 async function loadInventoryData(forceRefresh = false) {
     if (isLoading) {
-        console.log('Already loading...');
+        console.log('⏳ Already loading data...');
         return;
     }
     
@@ -252,6 +248,7 @@ async function loadInventoryData(forceRefresh = false) {
             }
         }
         
+        console.log('🌐 Fetching from server...');
         const response = await fetch(`${CONFIG.API_URL}?action=getData&t=${Date.now()}`);
         
         if (!response.ok) {
@@ -259,7 +256,7 @@ async function loadInventoryData(forceRefresh = false) {
         }
         
         const data = await response.json();
-        console.log('📦 Received data:', data);
+        console.log('📦 Received data:', data.length, 'properties');
         
         if (Array.isArray(data) && data.length > 0) {
             inventoryData = data;
@@ -277,7 +274,7 @@ async function loadInventoryData(forceRefresh = false) {
         
     } catch (error) {
         console.error('❌ Error loading data:', error);
-        showToast('Failed to load data', 'error');
+        showToast('Failed to load data. Please refresh.', 'error');
         
         const cachedData = getCachedData();
         if (cachedData) {
@@ -304,10 +301,6 @@ function processData() {
     renderPropertyCards();
     updateResultsCount();
 }
-
-// ============================================
-// CACHE MANAGEMENT
-// ============================================
 
 function cacheData(data) {
     try {
@@ -339,38 +332,158 @@ function getCachedData() {
 }
 
 // ============================================
-// SEARCHABLE DROPDOWNS (Placeholders)
+// SEARCHABLE DROPDOWNS
 // ============================================
 
 function setupSearchableDropdown(inputId, dropdownId, dataKey) {
-    // Placeholder - implement if needed
+    const input = document.getElementById(inputId);
+    const dropdown = document.getElementById(dropdownId);
+    
+    if (!input || !dropdown) return;
+    
+    input.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeAllDropdowns();
+        renderDropdownOptions(dataKey, dropdown, input);
+        dropdown.classList.add('active');
+        activeDropdown = dropdown;
+    });
+    
+    input.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const filtered = dropdownData[dataKey].filter(item => 
+            item.toLowerCase().includes(searchTerm)
+        );
+        renderDropdownOptions(dataKey, dropdown, input, filtered);
+        dropdown.classList.add('active');
+    });
+}
+
+function renderDropdownOptions(dataKey, dropdown, input, customData = null) {
+    const data = customData || dropdownData[dataKey];
+    
+    dropdown.innerHTML = '';
+    
+    // Add "All" option
+    const allOption = document.createElement('div');
+    allOption.className = 'select-option';
+    allOption.textContent = `All ${dataKey.charAt(0).toUpperCase() + dataKey.slice(1)}s`;
+    allOption.addEventListener('click', function() {
+        input.value = '';
+        input.dataset.value = '';
+        closeAllDropdowns();
+        applyFilters();
+    });
+    dropdown.appendChild(allOption);
+    
+    // Add data options
+    data.forEach(item => {
+        const option = document.createElement('div');
+        option.className = 'select-option';
+        option.textContent = item;
+        
+        if (input.dataset.value === item) {
+            option.classList.add('selected');
+        }
+        
+        option.addEventListener('click', function() {
+            input.value = item;
+            input.dataset.value = item;
+            closeAllDropdowns();
+            applyFilters();
+        });
+        
+        dropdown.appendChild(option);
+    });
 }
 
 function closeAllDropdowns() {
     document.querySelectorAll('.select-dropdown').forEach(dropdown => {
         dropdown.classList.remove('active');
     });
+    activeDropdown = null;
 }
 
 function populateDropdownData() {
     dropdownData.tower = [...new Set(inventoryData.map(item => item.Tower).filter(Boolean))].sort();
     dropdownData.typology = [...new Set(inventoryData.map(item => item.Typology).filter(Boolean))].sort();
     dropdownData.facing = [...new Set(inventoryData.map(item => item.Facing).filter(Boolean))].sort();
+    
+    console.log('📋 Dropdown data populated:', {
+        towers: dropdownData.tower.length,
+        typologies: dropdownData.typology.length,
+        facings: dropdownData.facing.length
+    });
 }
 
 // ============================================
-// FILTERS
+// FILTERS - OPTIMIZED VERSION
 // ============================================
 
 function applyFilters() {
-    // Basic filter logic
-    filteredData = [...inventoryData];
-    updateStatistics();
-    renderPropertyCards();
-    updateResultsCount();
+    const towerInput = document.getElementById('filterTower');
+    const typologyInput = document.getElementById('filterTypology');
+    const facingInput = document.getElementById('filterFacing');
+    const availabilitySelect = document.getElementById('filterAvailability');
+    const searchInput = document.getElementById('searchUnit');
+    
+    const tower = towerInput?.dataset.value || '';
+    const typology = typologyInput?.dataset.value || '';
+    const facing = facingInput?.dataset.value || '';
+    const availability = availabilitySelect?.value || '';
+    const searchUnit = searchInput?.value.toLowerCase() || '';
+    
+    // Show loading effect
+    const propertyGrid = document.getElementById('propertyGrid');
+    if (propertyGrid) propertyGrid.style.opacity = '0.5';
+    
+    // Use setTimeout for smoother UI update
+    setTimeout(() => {
+        filteredData = inventoryData.filter(item => {
+            const matchTower = !tower || String(item.Tower).trim() === tower;
+            const matchTypology = !typology || String(item.Typology).trim() === typology;
+            const matchFacing = !facing || String(item.Facing).trim() === facing;
+            const matchAvailability = !availability || String(item.Availability).trim() === availability;
+            const matchSearch = !searchUnit || String(item['Unit Number']).toLowerCase().includes(searchUnit);
+            
+            return matchTower && matchTypology && matchFacing && matchAvailability && matchSearch;
+        });
+        
+        console.log(`🔍 Filtered: ${filteredData.length} of ${inventoryData.length} properties`);
+        
+        updateStatistics();
+        renderPropertyCards();
+        updateResultsCount();
+        
+        // Restore opacity
+        if (propertyGrid) propertyGrid.style.opacity = '1';
+    }, 10);
 }
 
 function clearFilters() {
+    const towerInput = document.getElementById('filterTower');
+    const typologyInput = document.getElementById('filterTypology');
+    const facingInput = document.getElementById('filterFacing');
+    
+    if (towerInput) {
+        towerInput.value = '';
+        towerInput.dataset.value = '';
+    }
+    if (typologyInput) {
+        typologyInput.value = '';
+        typologyInput.dataset.value = '';
+    }
+    if (facingInput) {
+        facingInput.value = '';
+        facingInput.dataset.value = '';
+    }
+    
+    const availabilitySelect = document.getElementById('filterAvailability');
+    const searchInput = document.getElementById('searchUnit');
+    
+    if (availabilitySelect) availabilitySelect.value = '';
+    if (searchInput) searchInput.value = '';
+    
     filteredData = [...inventoryData];
     updateStatistics();
     renderPropertyCards();
@@ -384,14 +497,28 @@ function clearFilters() {
 
 function updateStatistics() {
     const total = filteredData.length;
-    const available = filteredData.filter(item => item.Availability === 'Available').length;
-    const sold = filteredData.filter(item => item.Availability === 'Sold').length;
-    const blocked = filteredData.filter(item => item.Availability === 'Blocked').length;
+    
+    const available = filteredData.filter(item => {
+        const status = String(item.Availability || '').trim().toLowerCase();
+        return status === 'available' || status === '';
+    }).length;
+    
+    const sold = filteredData.filter(item => {
+        const status = String(item.Availability || '').trim().toLowerCase();
+        return status === 'sold';
+    }).length;
+    
+    const blocked = filteredData.filter(item => {
+        const status = String(item.Availability || '').trim().toLowerCase();
+        return status === 'blocked' || status === 'block';
+    }).length;
     
     setStatValue('totalUnits', total);
     setStatValue('availableUnits', available);
     setStatValue('soldUnits', sold);
     setStatValue('blockedUnits', blocked);
+    
+    console.log(`📊 Stats - Total: ${total}, Available: ${available}, Sold: ${sold}, Blocked: ${blocked}`);
 }
 
 function setStatValue(id, value) {
@@ -400,11 +527,13 @@ function setStatValue(id, value) {
 }
 
 // ============================================
-// PROPERTY CARDS RENDERING
+// PROPERTY CARDS RENDERING - FIXED VERSION
 // ============================================
 
 function renderPropertyCards() {
     const grid = document.getElementById('propertyGrid');
+    const emptyState = document.getElementById('emptyState');
+    
     if (!grid) return;
     
     grid.innerHTML = '';
@@ -414,18 +543,35 @@ function renderPropertyCards() {
         return;
     }
     
-    document.getElementById('emptyState')?.classList.add('hidden');
+    if (emptyState) emptyState.classList.add('hidden');
     
     filteredData.forEach(property => {
         const card = createPropertyCard(property);
         grid.appendChild(card);
     });
+    
+    console.log(`🎴 Rendered ${filteredData.length} property cards`);
 }
 
 function createPropertyCard(property) {
     const card = document.createElement('div');
-    const statusClass = property.Availability === 'Available' ? 'available' :
-                       property.Availability === 'Sold' ? 'sold' : 'blocked';
+    
+    // Normalize and validate availability status
+    let availability = String(property.Availability || '').trim();
+    
+    // Handle empty or null values - default to Available
+    if (!availability || availability === '' || availability === 'null' || availability === 'undefined') {
+        availability = 'Available';
+    }
+    
+    const status = availability.toLowerCase();
+    const statusClass = status === 'available' ? 'available' :
+                       status === 'sold' ? 'sold' : 
+                       status === 'blocked' || status === 'block' ? 'blocked' : 
+                       'available'; // Default to available
+    
+    // Display text with proper capitalization
+    const displayStatus = availability.charAt(0).toUpperCase() + availability.slice(1).toLowerCase();
     
     card.className = `property-card ${statusClass}`;
     card.onclick = () => openPropertyModal(property);
@@ -433,7 +579,7 @@ function createPropertyCard(property) {
     card.innerHTML = `
         <div class="card-header">
             <div class="card-unit">${escapeHtml(property['Unit Number']) || 'N/A'}</div>
-            <span class="card-status">${escapeHtml(property.Availability) || 'Unknown'}</span>
+            <span class="card-status">${escapeHtml(displayStatus)}</span>
         </div>
         <div class="card-body">
             <div class="card-info">
@@ -481,6 +627,11 @@ function openPropertyModal(property) {
     
     modalTitle.textContent = `Unit ${property['Unit Number']} - Details`;
     
+    // Normalize availability for modal display
+    let availability = String(property.Availability || '').trim();
+    if (!availability) availability = 'Available';
+    const displayAvailability = availability.charAt(0).toUpperCase() + availability.slice(1).toLowerCase();
+    
     modalBody.innerHTML = `
         <div class="detail-grid">
             <div class="detail-item">
@@ -496,16 +647,24 @@ function openPropertyModal(property) {
                 <div class="detail-value">${escapeHtml(property.Tower) || 'N/A'}</div>
             </div>
             <div class="detail-item">
-                <div class="detail-label">Typology</div>
-                <div class="detail-value">${escapeHtml(property.Typology) || 'N/A'}</div>
+                <div class="detail-label">Band</div>
+                <div class="detail-value">${escapeHtml(property.Band) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Facing</div>
+                <div class="detail-value">${escapeHtml(property.Facing) || 'N/A'}</div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Carpet Area</div>
                 <div class="detail-value">${escapeHtml(property['Carpet Area']) || 'N/A'}</div>
             </div>
             <div class="detail-item">
-                <div class="detail-label">Facing</div>
-                <div class="detail-value">${escapeHtml(property.Facing) || 'N/A'}</div>
+                <div class="detail-label">Typology</div>
+                <div class="detail-value">${escapeHtml(property.Typology) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Series</div>
+                <div class="detail-value">${escapeHtml(property.Series) || 'N/A'}</div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Base Price</div>
@@ -534,6 +693,14 @@ function openPropertyModal(property) {
             <div class="detail-item" style="grid-column: 1 / -1;">
                 <div class="detail-label">All Inclusive Amount</div>
                 <div class="detail-value" style="font-size: 24px; color: var(--primary-color);">${formatCurrency(property['All Inclusive Amount'])}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Payment Plan</div>
+                <div class="detail-value">${escapeHtml(property['Payment Plan']) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Availability</div>
+                <div class="detail-value">${escapeHtml(displayAvailability)}</div>
             </div>
         </div>
     `;
@@ -594,7 +761,7 @@ function exportToCSV() {
         link.click();
         document.body.removeChild(link);
         
-        console.log(`📥 Exported ${filteredData.length} records`);
+        console.log(`📥 Exported ${filteredData.length} records to ${filename}`);
         showToast('Data exported successfully', 'success');
         
     } catch (error) {
@@ -668,13 +835,17 @@ function debounce(func, wait) {
 function startAutoRefresh() {
     stopAutoRefresh();
     console.log(`⏰ Auto-refresh enabled (every ${CONFIG.REFRESH_INTERVAL / 1000}s)`);
-    refreshTimer = setInterval(() => loadInventoryData(false), CONFIG.REFRESH_INTERVAL);
+    refreshTimer = setInterval(() => {
+        console.log('⏰ Auto-refreshing data...');
+        loadInventoryData(false);
+    }, CONFIG.REFRESH_INTERVAL);
 }
 
 function stopAutoRefresh() {
     if (refreshTimer) {
         clearInterval(refreshTimer);
         refreshTimer = null;
+        console.log('⏰ Auto-refresh disabled');
     }
 }
 
@@ -691,4 +862,4 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-console.log('🚀 MICL Live Inventory Panel - Ready');
+console.log('✅ MICL Live Inventory Panel - Optimized and Ready');
