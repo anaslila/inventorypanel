@@ -1,10 +1,10 @@
 // ============================================
-// MICL Live Inventory Panel - ACCURATE DATA VERSION
+// MICL Live Inventory Panel - SILENT REFRESH VERSION
 // ============================================
 
 const CONFIG = {
     API_URL: 'https://script.google.com/macros/s/AKfycby-gPsGojstSyFN0f5E30Ip7HOfQemIS5l4e2WtfpsdQlsVcBNbNcFIIy06-Tq62MVUJQ/exec',
-    REFRESH_INTERVAL: 30000,
+    REFRESH_INTERVAL: 3000,
     STORAGE_KEY: 'miclUser',
     CACHE_KEY: 'miclInventoryCache',
     CACHE_EXPIRY: 5 * 60 * 1000
@@ -201,7 +201,7 @@ function handleLogout() {
 }
 
 // ============================================
-// DATA LOADING
+// DATA LOADING - SILENT BACKGROUND REFRESH
 // ============================================
 
 async function loadInventoryData(forceRefresh = false) {
@@ -210,19 +210,8 @@ async function loadInventoryData(forceRefresh = false) {
         return;
     }
     
-    const loadingEl = document.getElementById('loadingIndicator');
-    const propertyGrid = document.getElementById('propertyGrid');
-    const emptyState = document.getElementById('emptyState');
-    const resultsInfo = document.getElementById('resultsInfo');
-    
     isLoading = true;
-    
-    if (loadingEl) loadingEl.classList.remove('hidden');
-    if (propertyGrid) propertyGrid.style.display = 'none';
-    if (emptyState) emptyState.classList.add('hidden');
-    if (resultsInfo) resultsInfo.style.display = 'none';
-    
-    console.log('📊 Loading inventory data...');
+    console.log('📊 Loading inventory data silently...');
     
     try {
         if (!forceRefresh) {
@@ -230,11 +219,8 @@ async function loadInventoryData(forceRefresh = false) {
             if (cachedData) {
                 console.log('📦 Using cached data');
                 inventoryData = cachedData;
-                filteredData = [...inventoryData];
-                processData();
-                if (loadingEl) loadingEl.classList.add('hidden');
-                if (propertyGrid) propertyGrid.style.display = 'grid';
-                if (resultsInfo) resultsInfo.style.display = 'flex';
+                populateDropdownData();
+                applyFilters();
                 isLoading = false;
                 return;
             }
@@ -252,11 +238,11 @@ async function loadInventoryData(forceRefresh = false) {
         
         if (Array.isArray(data) && data.length > 0) {
             inventoryData = data;
-            filteredData = [...inventoryData];
             cacheData(inventoryData);
-            processData();
+            populateDropdownData();
+            applyFilters();
             console.log(`✅ Loaded ${inventoryData.length} properties`);
-            showToast('Data loaded successfully', 'success');
+            if (forceRefresh) showToast('Data refreshed successfully', 'success');
         } else {
             console.warn('⚠️ No data received');
             inventoryData = [];
@@ -266,32 +252,22 @@ async function loadInventoryData(forceRefresh = false) {
         
     } catch (error) {
         console.error('❌ Error loading data:', error);
-        showToast('Failed to load data. Please refresh.', 'error');
+        if (forceRefresh) showToast('Failed to load data. Using cached version.', 'error');
         
         const cachedData = getCachedData();
         if (cachedData) {
             console.log('📦 Using cached data as fallback');
             inventoryData = cachedData;
-            filteredData = [...inventoryData];
-            processData();
+            populateDropdownData();
+            applyFilters();
         } else {
             showEmptyState();
         }
     } finally {
-        if (loadingEl) loadingEl.classList.add('hidden');
-        if (propertyGrid) propertyGrid.style.display = 'grid';
-        if (resultsInfo) resultsInfo.style.display = 'flex';
         isLoading = false;
         updateLastUpdatedTime();
         startAutoRefresh();
     }
-}
-
-function processData() {
-    populateDropdownData();
-    updateStatistics();
-    renderPropertyCards();
-    updateResultsCount();
 }
 
 function cacheData(data) {
@@ -407,7 +383,7 @@ function populateDropdownData() {
 }
 
 // ============================================
-// FILTERS
+// FILTERS - NO VISUAL DISTURBANCE
 // ============================================
 
 function applyFilters() {
@@ -423,28 +399,21 @@ function applyFilters() {
     const availability = availabilitySelect?.value || '';
     const searchUnit = searchInput?.value.toLowerCase() || '';
     
-    const propertyGrid = document.getElementById('propertyGrid');
-    if (propertyGrid) propertyGrid.style.opacity = '0.5';
+    filteredData = inventoryData.filter(item => {
+        const matchTower = !tower || String(item.Tower).trim() === tower;
+        const matchTypology = !typology || String(item.Typology).trim() === typology;
+        const matchFacing = !facing || String(item.Facing).trim() === facing;
+        const matchAvailability = !availability || String(item.Availability).trim() === availability;
+        const matchSearch = !searchUnit || String(item['Unit Number']).toLowerCase().includes(searchUnit);
+        
+        return matchTower && matchTypology && matchFacing && matchAvailability && matchSearch;
+    });
     
-    setTimeout(() => {
-        filteredData = inventoryData.filter(item => {
-            const matchTower = !tower || String(item.Tower).trim() === tower;
-            const matchTypology = !typology || String(item.Typology).trim() === typology;
-            const matchFacing = !facing || String(item.Facing).trim() === facing;
-            const matchAvailability = !availability || String(item.Availability).trim() === availability;
-            const matchSearch = !searchUnit || String(item['Unit Number']).toLowerCase().includes(searchUnit);
-            
-            return matchTower && matchTypology && matchFacing && matchAvailability && matchSearch;
-        });
-        
-        console.log(`🔍 Filtered: ${filteredData.length} of ${inventoryData.length} properties`);
-        
-        updateStatistics();
-        renderPropertyCards();
-        updateResultsCount();
-        
-        if (propertyGrid) propertyGrid.style.opacity = '1';
-    }, 10);
+    console.log(`🔍 Filtered: ${filteredData.length} of ${inventoryData.length} properties`);
+    
+    updateStatistics();
+    renderPropertyCards();
+    updateResultsCount();
 }
 
 function clearFilters() {
@@ -479,7 +448,7 @@ function clearFilters() {
 }
 
 // ============================================
-// STATISTICS - EXACT MATCHING
+// STATISTICS
 // ============================================
 
 function updateStatistics() {
@@ -504,14 +473,6 @@ function updateStatistics() {
     setStatValue('availableUnits', available);
     setStatValue('soldUnits', sold);
     setStatValue('blockedUnits', blocked);
-    
-    console.log(`📊 EXACT Stats from Sheet:`);
-    console.log(`   Total: ${total}, Available: ${available}, Sold: ${sold}, Blocked: ${blocked}`);
-    
-    const counted = available + sold + blocked;
-    if (counted !== total) {
-        console.warn(`⚠️ WARNING: ${total - counted} units have invalid/empty status!`);
-    }
 }
 
 function setStatValue(id, value) {
@@ -520,7 +481,7 @@ function setStatValue(id, value) {
 }
 
 // ============================================
-// PROPERTY CARDS - EXACT DATA FROM SHEET
+// PROPERTY CARDS
 // ============================================
 
 function renderPropertyCards() {
@@ -549,24 +510,19 @@ function renderPropertyCards() {
 function createPropertyCard(property) {
     const card = document.createElement('div');
     
-    // GET EXACT VALUE FROM SHEET - NO DEFAULTS
     let availability = String(property.Availability || '').trim();
     
-    // If empty, show as Unknown to alert you
     if (!availability || availability === '' || availability === 'null' || availability === 'undefined') {
         availability = 'Unknown';
-        console.warn('⚠️ Empty availability for unit:', property['Unit Number']);
     }
     
     const status = availability.toLowerCase();
     
-    // Exact matching
     const statusClass = status === 'available' ? 'available' :
                        status === 'sold' ? 'sold' : 
                        status === 'blocked' || status === 'block' ? 'blocked' : 
-                       'blocked'; // Default to blocked for safety
+                       'blocked';
     
-    // Display EXACTLY what's in sheet
     const displayStatus = availability;
     
     card.className = `property-card ${statusClass}`;
@@ -828,9 +784,9 @@ function debounce(func, wait) {
 
 function startAutoRefresh() {
     stopAutoRefresh();
-    console.log(`⏰ Auto-refresh enabled (every ${CONFIG.REFRESH_INTERVAL / 1000}s)`);
+    console.log(`⏰ Silent auto-refresh enabled (every ${CONFIG.REFRESH_INTERVAL / 1000}s)`);
     refreshTimer = setInterval(() => {
-        console.log('⏰ Auto-refreshing data...');
+        console.log('⏰ Auto-refreshing data silently...');
         loadInventoryData(false);
     }, CONFIG.REFRESH_INTERVAL);
 }
@@ -855,4 +811,4 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-console.log('✅ MICL Live Inventory Panel - ACCURATE DATA MODE');
+console.log('✅ MICL Live Inventory Panel - SILENT REFRESH MODE');
