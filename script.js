@@ -349,12 +349,15 @@ async function handleLogin(e) {
             localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(currentUser));
             showDashboard();
         } else {
-            errorEl.textContent = result.message || 'Invalid credentials';
+            // CUSTOM ERROR MESSAGE - Hide backend details
+            errorEl.textContent = '❌ Invalid username or password. Please try again.';
             errorEl.style.display = 'block';
+            console.log('❌ Login failed'); // Don't log the message from backend
         }
     } catch (error) {
         console.error('❌ Login error:', error);
-        errorEl.textContent = 'Login failed: ' + error.message;
+        // GENERIC ERROR - Don't expose backend details
+        errorEl.textContent = '⚠️ Unable to connect. Please check your connection and try again.';
         errorEl.style.display = 'block';
     } finally {
         submitBtn.disabled = false;
