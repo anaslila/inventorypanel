@@ -2,30 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
-    <!-- Primary Meta Tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MICL Live Inventory Panel</title>
-    <meta name="description" content="Professional real estate inventory management system for MICL residential projects">
-    <meta name="theme-color" content="#ffffff">
-    
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://i.postimg.cc/W4fwJm7g/image.png">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/W4fwJm7g/image.png">
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- Google Fonts - Poppins -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -44,14 +25,14 @@
                         <label for="username">
                             <i class="fas fa-user"></i> Username
                         </label>
-                        <input type="text" id="username" name="username" required placeholder="Enter your username" autocomplete="username">
+                        <input type="text" id="username" name="username" required placeholder="Enter your username">
                     </div>
                     
                     <div class="form-group">
                         <label for="password">
                             <i class="fas fa-lock"></i> Password
                         </label>
-                        <input type="password" id="password" name="password" required placeholder="Enter your password" autocomplete="current-password">
+                        <input type="password" id="password" name="password" required placeholder="Enter your password">
                     </div>
                     
                     <button type="submit" class="btn-login">
@@ -64,9 +45,9 @@
         </div>
     </div>
 
-    <!-- Main Dashboard -->
+    <!-- Dashboard Screen -->
     <div id="dashboardScreen" class="screen">
-        <!-- Header Navigation -->
+        <!-- Header -->
         <header class="main-header">
             <div class="header-container">
                 <div class="header-left">
@@ -83,7 +64,7 @@
                     </button>
                     <div class="user-menu">
                         <i class="fas fa-user-circle"></i>
-                        <span id="userDisplay"></span>
+                        <span id="userDisplay">User</span>
                     </div>
                     <button id="logoutBtn" class="btn-outline" title="Logout">
                         <i class="fas fa-sign-out-alt"></i> Logout
@@ -97,9 +78,7 @@
             <!-- Statistics Cards -->
             <div class="stats-container">
                 <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-building"></i>
-                    </div>
+                    <div class="stat-icon"><i class="fas fa-building"></i></div>
                     <div class="stat-details">
                         <p class="stat-label">Total Units</p>
                         <h3 class="stat-value" id="totalUnits">0</h3>
@@ -107,9 +86,7 @@
                 </div>
                 
                 <div class="stat-card stat-available">
-                    <div class="stat-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                     <div class="stat-details">
                         <p class="stat-label">Available</p>
                         <h3 class="stat-value" id="availableUnits">0</h3>
@@ -117,9 +94,7 @@
                 </div>
                 
                 <div class="stat-card stat-sold">
-                    <div class="stat-icon">
-                        <i class="fas fa-handshake"></i>
-                    </div>
+                    <div class="stat-icon"><i class="fas fa-handshake"></i></div>
                     <div class="stat-details">
                         <p class="stat-label">Sold</p>
                         <h3 class="stat-value" id="soldUnits">0</h3>
@@ -127,9 +102,7 @@
                 </div>
                 
                 <div class="stat-card stat-blocked">
-                    <div class="stat-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
                     <div class="stat-details">
                         <p class="stat-label">Blocked</p>
                         <h3 class="stat-value" id="blockedUnits">0</h3>
@@ -137,7 +110,7 @@
                 </div>
             </div>
 
-            <!-- Filters Section -->
+            <!-- Filters Panel -->
             <div class="filters-panel">
                 <div class="panel-header">
                     <h2><i class="fas fa-filter"></i> Filter Properties</h2>
@@ -148,39 +121,31 @@
                 
                 <div class="filters-grid">
                     <div class="filter-item">
-                        <label for="filterTower">
-                            <i class="fas fa-building"></i> Tower
-                        </label>
+                        <label for="filterTower"><i class="fas fa-building"></i> Tower</label>
                         <div class="custom-select">
-                            <input type="text" id="filterTower" placeholder="Select or search tower..." autocomplete="off">
+                            <input type="text" id="filterTower" placeholder="Select or search tower...">
                             <div class="select-dropdown" id="towerDropdown"></div>
                         </div>
                     </div>
                     
                     <div class="filter-item">
-                        <label for="filterTypology">
-                            <i class="fas fa-home"></i> Typology
-                        </label>
+                        <label for="filterTypology"><i class="fas fa-home"></i> Typology</label>
                         <div class="custom-select">
-                            <input type="text" id="filterTypology" placeholder="Select or search typology..." autocomplete="off">
+                            <input type="text" id="filterTypology" placeholder="Select or search typology...">
                             <div class="select-dropdown" id="typologyDropdown"></div>
                         </div>
                     </div>
                     
                     <div class="filter-item">
-                        <label for="filterFacing">
-                            <i class="fas fa-compass"></i> Facing
-                        </label>
+                        <label for="filterFacing"><i class="fas fa-compass"></i> Facing</label>
                         <div class="custom-select">
-                            <input type="text" id="filterFacing" placeholder="Select or search facing..." autocomplete="off">
+                            <input type="text" id="filterFacing" placeholder="Select or search facing...">
                             <div class="select-dropdown" id="facingDropdown"></div>
                         </div>
                     </div>
                     
                     <div class="filter-item">
-                        <label for="filterAvailability">
-                            <i class="fas fa-info-circle"></i> Status
-                        </label>
+                        <label for="filterAvailability"><i class="fas fa-info-circle"></i> Status</label>
                         <select id="filterAvailability" class="select-input">
                             <option value="">All Status</option>
                             <option value="Available">Available</option>
@@ -189,24 +154,22 @@
                         </select>
                     </div>
                     
-                    <div class="filter-item filter-search">
-                        <label for="searchUnit">
-                            <i class="fas fa-search"></i> Search Unit
-                        </label>
+                    <div class="filter-item">
+                        <label for="searchUnit"><i class="fas fa-search"></i> Search Unit</label>
                         <input type="text" id="searchUnit" placeholder="Search by unit number..." class="search-input">
                     </div>
                 </div>
             </div>
 
             <!-- Loading Indicator -->
-            <div id="loadingIndicator" class="loading-overlay">
+            <div id="loadingIndicator" class="loading-overlay hidden">
                 <div class="spinner"></div>
                 <p>Loading inventory data...</p>
             </div>
 
             <!-- Results Info -->
             <div id="resultsInfo" class="results-info">
-                <p id="resultsCount"></p>
+                <p id="resultsCount">Showing 0 of 0 properties</p>
                 <div class="view-controls">
                     <button id="exportBtn" class="btn-secondary">
                         <i class="fas fa-download"></i> Export CSV
@@ -225,18 +188,18 @@
                 <button id="resetFiltersBtn" class="btn-primary">Reset Filters</button>
             </div>
         </main>
+    </div>
 
-        <!-- Property Details Modal -->
-        <div id="propertyModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="modalTitle">Property Details</h2>
-                    <button class="modal-close" id="closeModal">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body" id="modalBody"></div>
+    <!-- Property Details Modal -->
+    <div id="propertyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Property Details</h2>
+                <button class="modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
 

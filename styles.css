@@ -66,11 +66,11 @@ body {
 
 /* Screen Management */
 .screen {
-    display: none;
+    display: none !important;
 }
 
 .screen.active {
-    display: block;
+    display: block !important;
 }
 
 .hidden {
