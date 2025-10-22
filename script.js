@@ -1,558 +1,840 @@
+// ============================================
+// MICL Live Inventory Panel - Professional JavaScript
+// ============================================
+
+// Configuration
+const CONFIG = {
+    API_URL: 'https://script.google.com/macros/s/AKfycby-gPsGojstSyFN0f5E30Ip7HOfQemIS5l4e2WtfpsdQlsVcBNbNcFIIy06-Tq62MVUJQ/exec',
+    REFRESH_INTERVAL: 30000,
+    STORAGE_KEY: 'miclUser',
+    CACHE_KEY: 'miclInventoryCache',
+    CACHE_EXPIRY: 5 * 60 * 1000
+};
+
 // Global variables
-let currentProperty = null;
-let suggestionIndex = -1;
+let inventoryData = [];
+let filteredData = [];
+let currentUser = null;
+let refreshTimer = null;
+let isLoading = false;
+let activeDropdown = null;
 
-// Initialize the application
+// Searchable dropdown data
+let dropdownData = {
+    tower: [],
+    typology: [],
+    facing: []
+};
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
 document.addEventListener('DOMContentLoaded', function() {
-    const flatInput = document.getElementById('flatNumber');
-    flatInput.addEventListener('input', () => { 
-        showSuggestions(flatInput.value); 
-        lookupProperty(); 
-    });
-    flatInput.addEventListener('keydown', handleSuggestionKeys);
-    document.addEventListener('click', e => { 
-        if(!e.target.closest('.input-wrapper')) hideSuggestions(); 
-    });
-    
-    // Window controls
-    document.querySelector('.minimize-btn').onclick = () => document.body.style.display='none';
-    document.querySelector('.close-btn').onclick = () => {
-        if(confirm('Close application?')) window.close();
-    };
-
-    // Restore last search
-    const lastUnit = localStorage.getItem('lastSearchedUnit');
-    if (lastUnit && inventoryData[lastUnit]) { 
-        flatInput.value = lastUnit; 
-        lookupProperty(); 
-    }
+    console.log('🚀 MICL Live Inventory Panel - Initializing...');
+    checkLoginStatus();
+    setupEventListeners();
+    registerServiceWorker();
 });
 
-// PERFECT Indian Number Formatting Function
-function formatIndianCurrency(amount) {
-    if (!amount || amount === 0) return "₹ 0";
-    
-    const num = Math.round(amount);
-    const numStr = num.toString();
-    
-    // Handle numbers less than 1000
-    if (numStr.length <= 3) {
-        return `₹ ${numStr}`;
-    }
-    
-    // For Indian numbering system (last 3 digits, then groups of 2)
-    const lastThree = numStr.substr(numStr.length - 3);
-    const remaining = numStr.substr(0, numStr.length - 3);
-    
-    let formattedRemaining = '';
-    for (let i = remaining.length; i > 0; i -= 2) {
-        const start = Math.max(0, i - 2);
-        const group = remaining.substr(start, i - start);
-        formattedRemaining = group + (formattedRemaining ? ',' + formattedRemaining : '');
-    }
-    
-    return `₹ ${formattedRemaining},${lastThree}`;
-}
-
-// Main lookup function
-function lookupProperty() {
-    const flatNumber = document.getElementById('flatNumber').value.trim().toUpperCase();
-    
-    if (!flatNumber) {
-        clearAllFields();
-        showEmptyState();
-        return;
-    }
-    
-    const property = inventoryData[flatNumber];
-    
-    if (property) {
-        currentProperty = property;
-        localStorage.setItem('lastSearchedUnit', flatNumber);
-        populateFields(property);
-        showPaymentPlan(property);
-        hideEmptyState();
-        hideSuggestions();
-        hideError();
+function checkLoginStatus() {
+    const savedUser = localStorage.getItem(CONFIG.STORAGE_KEY);
+    if (savedUser) {
+        try {
+            currentUser = JSON.parse(savedUser);
+            showDashboard();
+        } catch (error) {
+            console.error('Error parsing saved user:', error);
+            showLogin();
+        }
     } else {
-        clearAllFields();
-        showError(flatNumber);
+        showLogin();
     }
 }
 
-// Populate all form fields with perfect formatting
-function populateFields(property) {
-    document.getElementById('band').value = property.band;
-    document.getElementById('facing').value = property.facing;
-    document.getElementById('carpet').value = property.carpetArea;
-    document.getElementById('typology').value = property.typology;
-    
-    // Format all currency values with Indian numbering
-    document.getElementById('agreementValue').value = formatIndianCurrency(property.price);
-    document.getElementById('stampDuty').value = formatIndianCurrency(property.stampDuty);
-    document.getElementById('gst').value = formatIndianCurrency(property.gst);
-    document.getElementById('regAmt').value = formatIndianCurrency(property.registration);
-    document.getElementById('otherCharges').value = formatIndianCurrency(property.otherCharges);
-    document.getElementById('allInclusive').value = formatIndianCurrency(property.allInclusiveAmount);
-    document.getElementById('possessionCharges').value = formatIndianCurrency(property.possessionCharges);
-    document.getElementById('tower').value = property.tower;
-    
-    // Update tower color
-    const towerColor = towerColors[property.tower] || '#4a90e2';
-    document.getElementById('tower').style.background = towerColor;
+// ============================================
+// SCREEN MANAGEMENT
+// ============================================
+
+function showLogin() {
+    document.getElementById('loginScreen').classList.add('active');
+    document.getElementById('dashboardScreen').classList.remove('active');
+    document.title = 'Login - MICL Live Inventory Panel';
 }
 
-// Show payment plan breakdown
-function showPaymentPlan(property) {
-    const paymentSection = document.getElementById('paymentSection');
-    const paymentPlanTitle = document.getElementById('paymentPlanTitle');
-    const towerName = document.getElementById('towerName');
-    const paymentBreakdown = document.getElementById('paymentBreakdown');
+function showDashboard() {
+    document.getElementById('loginScreen').classList.remove('active');
+    document.getElementById('dashboardScreen').classList.add('active');
+    document.getElementById('userDisplay').textContent = currentUser.username;
+    document.title = 'Dashboard - MICL Live Inventory Panel';
     
-    const plan = paymentPlans[property.paymentPlan];
-    if (!plan) {
-        paymentSection.style.display = 'none';
-        return;
-    }
+    loadInventoryData();
+    startAutoRefresh();
+}
+
+// ============================================
+// EVENT LISTENERS
+// ============================================
+
+function setupEventListeners() {
+    // Login form
+    document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
     
-    // Update title and tower
-    paymentPlanTitle.textContent = `Payment Plan Breakup (${property.paymentPlan})`;
-    towerName.textContent = property.tower;
+    // Logout button
+    document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
     
-    // Update tower color
-    const towerColor = towerColors[property.tower] || '#4a90e2';
-    towerName.style.background = towerColor;
-    
-    // Generate payment breakdown with perfect formatting
-    paymentBreakdown.innerHTML = '';
-    
-    plan.forEach(stage => {
-        const amount = Math.round(property.price * stage.percentage / 100);
-        const row = document.createElement('div');
-        row.className = 'payment-row';
-        row.innerHTML = `
-            <div class="percentage">${stage.percentage}%</div>
-            <div class="amount">${formatIndianCurrency(amount)}</div>
-            <div class="milestone">${stage.stage}</div>
-        `;
-        paymentBreakdown.appendChild(row);
+    // Refresh button
+    document.getElementById('refreshBtn')?.addEventListener('click', () => {
+        loadInventoryData(true);
+        showToast('Refreshing data...', 'success');
     });
     
-    paymentSection.style.display = 'block';
-    paymentSection.classList.add('fade-in');
+    // Searchable dropdowns
+    setupSearchableDropdown('filterTower', 'towerDropdown', 'tower');
+    setupSearchableDropdown('filterTypology', 'typologyDropdown', 'typology');
+    setupSearchableDropdown('filterFacing', 'facingDropdown', 'facing');
+    
+    // Regular filters
+    document.getElementById('filterAvailability')?.addEventListener('change', applyFilters);
+    document.getElementById('searchUnit')?.addEventListener('input', debounce(applyFilters, 300));
+    
+    // Filter buttons
+    document.getElementById('clearFiltersBtn')?.addEventListener('click', clearFilters);
+    document.getElementById('resetFiltersBtn')?.addEventListener('click', clearFilters);
+    
+    // Export button
+    document.getElementById('exportBtn')?.addEventListener('click', exportToCSV);
+    
+    // Modal close
+    document.getElementById('closeModal')?.addEventListener('click', closeModal);
+    document.getElementById('propertyModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+    
+    // Close dropdowns on outside click
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.custom-select')) {
+            closeAllDropdowns();
+        }
+    });
 }
 
-// Show suggestions dropdown
-function showSuggestions(query) {
-    const suggestionsDiv = document.getElementById('suggestions');
+// ============================================
+// AUTHENTICATION
+// ============================================
+
+async function handleLogin(e) {
+    e.preventDefault();
     
-    if (!query || query.length < 1) {
-        hideSuggestions();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const errorEl = document.getElementById('loginError');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    
+    if (!username || !password) {
+        errorEl.textContent = 'Please enter both username and password';
         return;
     }
     
-    const matches = Object.keys(inventoryData)
-        .filter(unit => unit.toLowerCase().includes(query.toLowerCase()))
-        .slice(0, 10);
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+    errorEl.textContent = '';
     
-    if (matches.length === 0) {
-        hideSuggestions();
-        return;
-    }
-    
-    suggestionsDiv.innerHTML = '';
-    
-    matches.forEach(unitNumber => {
-        const property = inventoryData[unitNumber];
-        const div = document.createElement('div');
-        div.className = 'suggestion-item';
-        div.innerHTML = `
-            <div class="unit-number">${unitNumber}</div>
-            <div class="unit-details">${property.tower} Tower • ${property.typology} • ${property.carpetArea}</div>
-        `;
+    try {
+        const response = await fetch(
+            `${CONFIG.API_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+            { method: 'GET', headers: { 'Content-Type': 'application/json' } }
+        );
         
-        div.addEventListener('click', () => selectSuggestion(unitNumber));
-        suggestionsDiv.appendChild(div);
-    });
-    
-    suggestionsDiv.classList.add('show');
-    suggestionIndex = -1;
-}
-
-// Hide suggestions
-function hideSuggestions() {
-    document.getElementById('suggestions').classList.remove('show');
-    suggestionIndex = -1;
-}
-
-// Handle keyboard navigation in suggestions
-function handleSuggestionKeys(e) {
-    const suggestions = document.querySelectorAll('.suggestion-item');
-    if (!suggestions.length) return;
-    
-    if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        suggestionIndex = Math.min(suggestionIndex + 1, suggestions.length - 1);
-        highlightSuggestion();
-    } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        suggestionIndex = Math.max(suggestionIndex - 1, -1);
-        highlightSuggestion();
-    } else if (e.key === 'Enter') {
-        e.preventDefault();
-        if (suggestionIndex >= 0 && suggestions[suggestionIndex]) {
-            const unitNumber = suggestions[suggestionIndex].querySelector('.unit-number').textContent;
-            selectSuggestion(unitNumber);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            currentUser = {
+                username: username,
+                role: result.role,
+                loginTime: new Date().toISOString()
+            };
+            
+            localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(currentUser));
+            console.log('✅ Login successful:', currentUser.username);
+            showDashboard();
+        } else {
+            errorEl.textContent = result.message || 'Invalid credentials';
         }
-    } else if (e.key === 'Escape') {
-        hideSuggestions();
+    } catch (error) {
+        console.error('❌ Login error:', error);
+        errorEl.textContent = 'Login failed. Please check your connection and try again.';
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
     }
 }
 
-// Highlight suggestion based on keyboard navigation
-function highlightSuggestion() {
-    const suggestions = document.querySelectorAll('.suggestion-item');
-    suggestions.forEach((item, index) => {
-        if (index === suggestionIndex) {
-            item.style.background = '#e3f2fd';
+function handleLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem(CONFIG.STORAGE_KEY);
+        localStorage.removeItem(CONFIG.CACHE_KEY);
+        currentUser = null;
+        stopAutoRefresh();
+        
+        inventoryData = [];
+        filteredData = [];
+        
+        document.getElementById('loginForm').reset();
+        document.getElementById('loginError').textContent = '';
+        
+        console.log('👋 Logged out successfully');
+        showLogin();
+        showToast('Logged out successfully', 'success');
+    }
+}
+
+// ============================================
+// DATA MANAGEMENT
+// ============================================
+
+async function loadInventoryData(forceRefresh = false) {
+    if (isLoading) return;
+    
+    const loadingEl = document.getElementById('loadingIndicator');
+    const propertyGrid = document.getElementById('propertyGrid');
+    const emptyState = document.getElementById('emptyState');
+    const resultsInfo = document.getElementById('resultsInfo');
+    
+    isLoading = true;
+    loadingEl.classList.remove('hidden');
+    propertyGrid.style.display = 'none';
+    emptyState.classList.add('hidden');
+    resultsInfo.style.display = 'none';
+    
+    try {
+        if (!forceRefresh) {
+            const cachedData = getCachedData();
+            if (cachedData) {
+                console.log('📦 Using cached data');
+                inventoryData = cachedData;
+                filteredData = [...inventoryData];
+                processData();
+                loadingEl.classList.add('hidden');
+                propertyGrid.style.display = 'grid';
+                resultsInfo.style.display = 'flex';
+                isLoading = false;
+                return;
+            }
+        }
+        
+        console.log('🌐 Fetching data from server...');
+        const response = await fetch(`${CONFIG.API_URL}?action=getData&t=${Date.now()}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            cache: 'no-cache'
+        });
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        
+        if (Array.isArray(data) && data.length > 0) {
+            inventoryData = data;
+            filteredData = [...inventoryData];
+            cacheData(inventoryData);
+            processData();
+            console.log(`✅ Loaded ${inventoryData.length} properties`);
+            showToast('Data loaded successfully', 'success');
         } else {
-            item.style.background = '';
-        }
-    });
-}
-
-// Select suggestion
-function selectSuggestion(unitNumber) {
-    document.getElementById('flatNumber').value = unitNumber;
-    hideSuggestions();
-    lookupProperty();
-}
-
-// Clear all form fields
-function clearAllFields() {
-    const fields = [
-        'band', 'facing', 'carpet', 'typology',
-        'agreementValue', 'stampDuty', 'gst', 'regAmt',
-        'otherCharges', 'allInclusive', 'possessionCharges', 'tower'
-    ];
-    
-    fields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        field.value = '';
-        if (fieldId === 'tower') {
-            field.style.background = '';
-        }
-    });
-    
-    document.getElementById('paymentSection').style.display = 'none';
-    currentProperty = null;
-}
-
-// Show empty state
-function showEmptyState() {
-    document.getElementById('emptyState').style.display = 'block';
-}
-
-// Hide empty state
-function hideEmptyState() {
-    document.getElementById('emptyState').style.display = 'none';
-}
-
-// Show error state
-function showError(flatNumber) {
-    hideEmptyState();
-    hideError(); // Remove existing error
-    
-    const errorDiv = document.createElement('div');
-    errorDiv.id = 'errorState';
-    errorDiv.className = 'error-state fade-in';
-    errorDiv.innerHTML = `
-        <h3>Property Not Found</h3>
-        <p>No property found with number "${flatNumber}"</p>
-        <p>Please check the spelling and try again</p>
-    `;
-    
-    document.querySelector('.content').appendChild(errorDiv);
-    
-    // Auto remove error after 5 seconds
-    setTimeout(() => {
-        hideError();
-        if (!currentProperty) {
+            console.warn('⚠️ No data received from server');
+            inventoryData = [];
+            filteredData = [];
             showEmptyState();
         }
-    }, 5000);
-}
-
-// Hide error state
-function hideError() {
-    const errorState = document.getElementById('errorState');
-    if (errorState) {
-        errorState.remove();
+        
+    } catch (error) {
+        console.error('❌ Error loading data:', error);
+        showToast('Failed to load data. Please refresh.', 'error');
+        
+        const cachedData = getCachedData();
+        if (cachedData) {
+            console.log('📦 Using cached data as fallback');
+            inventoryData = cachedData;
+            filteredData = [...inventoryData];
+            processData();
+        } else {
+            showEmptyState();
+        }
+    } finally {
+        loadingEl.classList.add('hidden');
+        propertyGrid.style.display = 'grid';
+        resultsInfo.style.display = 'flex';
+        isLoading = false;
+        updateLastUpdatedTime();
     }
 }
 
-// Keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    // Ctrl+F to focus on input
-    if (e.ctrlKey && e.key === 'f') {
-        e.preventDefault();
-        document.getElementById('flatNumber').focus();
+function processData() {
+    populateDropdownData();
+    updateStatistics();
+    renderPropertyCards();
+    updateResultsCount();
+}
+
+// ============================================
+// CACHE MANAGEMENT
+// ============================================
+
+function cacheData(data) {
+    try {
+        const cacheObject = { data: data, timestamp: Date.now() };
+        localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(cacheObject));
+    } catch (error) {
+        console.error('Error caching data:', error);
     }
+}
+
+function getCachedData() {
+    try {
+        const cached = localStorage.getItem(CONFIG.CACHE_KEY);
+        if (!cached) return null;
+        
+        const cacheObject = JSON.parse(cached);
+        const now = Date.now();
+        
+        if (now - cacheObject.timestamp < CONFIG.CACHE_EXPIRY) {
+            return cacheObject.data;
+        } else {
+            localStorage.removeItem(CONFIG.CACHE_KEY);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error reading cache:', error);
+        return null;
+    }
+}
+
+// ============================================
+// SEARCHABLE DROPDOWNS
+// ============================================
+
+function setupSearchableDropdown(inputId, dropdownId, dataKey) {
+    const input = document.getElementById(inputId);
+    const dropdown = document.getElementById(dropdownId);
     
-    // Escape to clear
-    if (e.key === 'Escape' && !document.querySelector('.suggestions.show')) {
-        document.getElementById('flatNumber').value = '';
-        clearAllFields();
-        showEmptyState();
-    }
-});
-<script>
-/* ========== 1. LOGIN HANDLER ========== */
-function doLogin(){
-    if ($id('user').value === 'admin123' && $id('pass').value === 'admin456'){
-        localStorage.logged = '1';
-        $id('loginBox').style.display = 'none';
-        $id('app').style.display   = 'block';
-    }else{
-        alert('Invalid credentials');
-    }
-}
-if (localStorage.logged === '1'){
-    // Auto-open panel if already authenticated
-    document.addEventListener('DOMContentLoaded', ()=> {
-        $id('loginBox').style.display = 'none';
-        $id('app').style.display   = 'block';
+    if (!input || !dropdown) return;
+    
+    input.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeAllDropdowns();
+        renderDropdownOptions(dataKey, dropdown, input);
+        dropdown.classList.add('active');
+        activeDropdown = dropdown;
+    });
+    
+    input.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const filtered = dropdownData[dataKey].filter(item => 
+            item.toLowerCase().includes(searchTerm)
+        );
+        renderDropdownOptions(dataKey, dropdown, input, filtered);
+        dropdown.classList.add('active');
     });
 }
 
-/* ========== 2. GLOBAL DATA HOLDERS ========== */
-let propertyData   = {};   // { "A P104": {...} }
-let allUnitNumbers = [];   // ["A P104","B 2401",…]
-
-/* ========== 3. EXCEL READER (SheetJS) ========== */
-function readExcel(evt){
-    const file = evt.target.files[0];
-    if (!file){ return; }
-
-    const reader = new FileReader();
-    reader.onload = e => {
-        const wb = XLSX.read(e.target.result, {type:'array'});
-        const firstTab = wb.SheetNames[0];
-        const rows = XLSX.utils.sheet_to_json(wb.Sheets[firstTab]);
-
-        // EXPECTED COLUMN HEADERS in template:
-        // Unit Number | Band | Facing | Carpet | Typology | Price | Stamp | GST | Reg
-        // | Other | Possession | All Inclusive | Tower | Payment Plan
-        propertyData = {};
-        rows.forEach(r=>{
-            const key = (r['Unit Number']+'').trim().toUpperCase();
-            propertyData[key] = {
-                band  : r.Band,
-                face  : r.Facing,
-                carpet: r.Carpet,
-                type  : r.Typology,
-                price : +r.Price,
-                stamp : +r.Stamp,
-                gst   : +r.GST,
-                reg   : +r.Reg,
-                other : +r.Other,
-                poss  : +r.Possession,
-                total : +r['All Inclusive'],
-                tower : r.Tower,
-                plan  : r['Payment Plan']
-            };
-        });
-
-        allUnitNumbers = Object.keys(propertyData);
-
-        // store locally for offline reuse
-        localStorage.priceMap = JSON.stringify(propertyData);
-        localStorage.unitList = JSON.stringify(allUnitNumbers);
-
-        alert('✅ Inventory uploaded. Start searching!');
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-/* ========== 4. RESTORE CACHE ON LOAD ========== */
-if (localStorage.priceMap){
-    propertyData   = JSON.parse(localStorage.priceMap);
-    allUnitNumbers = JSON.parse(localStorage.unitList || '[]');
-}
-
-/* ========== 5. HELPER SHORTCUT ========== */
-function $id(id){ return document.getElementById(id); }
-</script>
-// INDIAN NUMBER FORMATTING
-function formatIndianNumber(num) {
-    if (!num) return '';
+function renderDropdownOptions(dataKey, dropdown, input, customData = null) {
+    const data = customData || dropdownData[dataKey];
     
-    // Convert to string and remove existing commas
-    let numStr = num.toString().replace(/,/g, '');
+    dropdown.innerHTML = '';
     
-    // Check if it's a valid number
-    if (isNaN(numStr)) return num;
+    // Add "All" option
+    const allOption = document.createElement('div');
+    allOption.className = 'select-option';
+    allOption.textContent = `All ${dataKey.charAt(0).toUpperCase() + dataKey.slice(1)}s`;
+    allOption.addEventListener('click', function() {
+        input.value = '';
+        input.dataset.value = '';
+        closeAllDropdowns();
+        applyFilters();
+    });
+    dropdown.appendChild(allOption);
     
-    // Split by decimal point
-    let parts = numStr.split('.');
-    let integerPart = parts[0];
-    let decimalPart = parts[1] ? '.' + parts[1] : '';
-    
-    // Apply Indian formatting (lakhs and crores)
-    if (integerPart.length > 3) {
-        // First, add comma before last 3 digits
-        let lastThree = integerPart.slice(-3);
-        let otherNumbers = integerPart.slice(0, -3);
+    // Add data options
+    data.forEach(item => {
+        const option = document.createElement('div');
+        option.className = 'select-option';
+        option.textContent = item;
         
-        // Then add comma every 2 digits for the rest
-        if (otherNumbers !== '') {
-            lastThree = ',' + lastThree;
+        if (input.dataset.value === item) {
+            option.classList.add('selected');
         }
         
-        // Add commas every 2 digits from right to left
-        let formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
-        return formatted + decimalPart;
+        option.addEventListener('click', function() {
+            input.value = item;
+            input.dataset.value = item;
+            closeAllDropdowns();
+            applyFilters();
+        });
+        
+        dropdown.appendChild(option);
+    });
+}
+
+function closeAllDropdowns() {
+    document.querySelectorAll('.select-dropdown').forEach(dropdown => {
+        dropdown.classList.remove('active');
+    });
+    activeDropdown = null;
+}
+
+function populateDropdownData() {
+    dropdownData.tower = [...new Set(inventoryData.map(item => item.Tower).filter(Boolean))].sort();
+    dropdownData.typology = [...new Set(inventoryData.map(item => item.Typology).filter(Boolean))].sort();
+    dropdownData.facing = [...new Set(inventoryData.map(item => item.Facing).filter(Boolean))].sort();
+}
+
+// ============================================
+// FILTER MANAGEMENT
+// ============================================
+
+function applyFilters() {
+    const tower = document.getElementById('filterTower')?.dataset.value || '';
+    const typology = document.getElementById('filterTypology')?.dataset.value || '';
+    const facing = document.getElementById('filterFacing')?.dataset.value || '';
+    const availability = document.getElementById('filterAvailability')?.value || '';
+    const searchUnit = document.getElementById('searchUnit')?.value.toLowerCase() || '';
+    
+    filteredData = inventoryData.filter(item => {
+        const matchTower = !tower || item.Tower === tower;
+        const matchTypology = !typology || item.Typology === typology;
+        const matchFacing = !facing || item.Facing === facing;
+        const matchAvailability = !availability || item.Availability === availability;
+        const matchSearch = !searchUnit || String(item['Unit Number']).toLowerCase().includes(searchUnit);
+        
+        return matchTower && matchTypology && matchFacing && matchAvailability && matchSearch;
+    });
+    
+    console.log(`🔍 Filtered: ${filteredData.length} of ${inventoryData.length} properties`);
+    
+    updateStatistics();
+    renderPropertyCards();
+    updateResultsCount();
+}
+
+function clearFilters() {
+    document.getElementById('filterTower').value = '';
+    document.getElementById('filterTower').dataset.value = '';
+    document.getElementById('filterTypology').value = '';
+    document.getElementById('filterTypology').dataset.value = '';
+    document.getElementById('filterFacing').value = '';
+    document.getElementById('filterFacing').dataset.value = '';
+    document.getElementById('filterAvailability').value = '';
+    document.getElementById('searchUnit').value = '';
+    
+    filteredData = [...inventoryData];
+    updateStatistics();
+    renderPropertyCards();
+    updateResultsCount();
+    
+    showToast('Filters cleared', 'success');
+}
+
+// ============================================
+// STATISTICS
+// ============================================
+
+function updateStatistics() {
+    const total = filteredData.length;
+    const available = filteredData.filter(item => item.Availability === 'Available').length;
+    const sold = filteredData.filter(item => item.Availability === 'Sold').length;
+    const blocked = filteredData.filter(item => item.Availability === 'Blocked').length;
+    
+    animateValue('totalUnits', 0, total, 500);
+    animateValue('availableUnits', 0, available, 500);
+    animateValue('soldUnits', 0, sold, 500);
+    animateValue('blockedUnits', 0, blocked, 500);
+}
+
+function animateValue(id, start, end, duration) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    
+    const range = end - start;
+    const increment = range / (duration / 16);
+    let current = start;
+    
+    const timer = setInterval(() => {
+        current += increment;
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+            current = end;
+            clearInterval(timer);
+        }
+        element.textContent = Math.round(current);
+    }, 16);
+}
+
+// ============================================
+// PROPERTY CARDS RENDERING
+// ============================================
+
+function renderPropertyCards() {
+    const grid = document.getElementById('propertyGrid');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    if (filteredData.length === 0) {
+        showEmptyState();
+        return;
     }
     
-    return integerPart + decimalPart;
-}
-
-function parseIndianNumber(formattedNum) {
-    // Remove commas and convert to number
-    return parseFloat(formattedNum.replace(/,/g, '')) || 0;
-}
-
-function formatAndCalculate(input, type) {
-    let value = input.value;
+    emptyState.classList.add('hidden');
     
-    // Remove non-digit characters except decimal point
-    value = value.replace(/[^\d.]/g, '');
-    
-    // Format the number in Indian style
-    let formatted = formatIndianNumber(value);
-    
-    // Update the input value
-    input.value = formatted;
-    
-    // Calculate EMI
-    calculateEMI();
+    filteredData.forEach(property => {
+        const card = createPropertyCard(property);
+        grid.appendChild(card);
+    });
 }
 
-// EMI CALCULATOR
-function openCalculator() {
-    openModal('calculatorModal');
-    calculateEMI();
-}
-
-function calculateEMI() {
-    // Parse Indian formatted number
-    const loanAmountInput = document.getElementById('loanAmount').value;
-    const principal = parseIndianNumber(loanAmountInput);
-    const rate = parseFloat(document.getElementById('interestRate').value) / 100 / 12 || 0;
-    const tenure = parseFloat(document.getElementById('loanTenure').value) * 12 || 0;
-
-    if (principal && rate && tenure) {
-        const emi = (principal * rate * Math.pow(1 + rate, tenure)) / (Math.pow(1 + rate, tenure) - 1);
-        const totalAmount = emi * tenure;
-        const totalInterest = totalAmount - principal;
-
-        // Format all amounts in Indian style first, then use formatPrice for display
-        document.getElementById('emiAmount').textContent = formatPrice(Math.round(emi));
-        document.getElementById('totalAmount').textContent = formatPrice(Math.round(totalAmount));
-        document.getElementById('totalInterest').textContent = formatPrice(Math.round(totalInterest));
-        document.getElementById('principalAmount').textContent = formatPrice(Math.round(principal));
-    } else {
-        // Show default values if inputs are invalid
-        document.getElementById('emiAmount').textContent = '₹0';
-        document.getElementById('totalAmount').textContent = '₹0';
-        document.getElementById('totalInterest').textContent = '₹0';
-        document.getElementById('principalAmount').textContent = '₹0';
-    }
-}
-/* ----------  CONSTRUCTION-LINKED PLAN  (CLP)  ---------- */
-} else {   //  currentPlan === 'construction'
-    if (isAsterBlu) {               /*  TOWER A & B  */
-        /*   40 % booking  +  five 10 % calls  + 10 % possession  */
-        const p1 = Math.floor(allInclusiveAmount * 0.40);   // 40 %  – Booking
-        const p2 = Math.floor(allInclusiveAmount * 0.10);   // 10 %  – Oct 2025
-        const p3 = p2;                                      // 10 %  – Jan 2026
-        const p4 = p2;                                      // 10 %  – May 2026
-        const p5 = p2;                                      // 10 %  – Dec 2026
-        const p6 = p2;                                      // 10 %  – Jun 2027
-        const p7 = p2;                                      // 10 %  – Dec 2027 (Possession)
-
-        timelineHTML = `
-            <div class="timeline-title">🏗️ Construction Linked Plan</div>
-
-            <div class="progress-info">
-                <div class="progress-title">📊 Construction Progress Requirements&nbsp;(Tower A & B)</div>
-                <div class="progress-details">
-                    <div class="progress-item">
-                        <div class="progress-percentage">40%</div>
-                        <div class="progress-label">Booking</div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-percentage">${formatPrice(p1)}</div>
-                        <div class="progress-label">Amount&nbsp;Due</div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-percentage">10%</div>
-                        <div class="progress-label">On&nbsp;Possession</div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-percentage">Dec 2027</div>
-                        <div class="progress-label">Possession</div>
-                    </div>
+function createPropertyCard(property) {
+    const card = document.createElement('div');
+    const statusClass = property.Availability === 'Available' ? 'available' :
+                       property.Availability === 'Sold' ? 'sold' : 'blocked';
+    
+    card.className = `property-card ${statusClass}`;
+    card.onclick = () => openPropertyModal(property);
+    
+    card.innerHTML = `
+        <div class="card-header">
+            <div class="card-unit">${escapeHtml(property['Unit Number']) || 'N/A'}</div>
+            <span class="card-status">${escapeHtml(property.Availability) || 'Unknown'}</span>
+        </div>
+        <div class="card-body">
+            <div class="card-info">
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-layer-group"></i> Floor
+                    </span>
+                    <span class="info-value">${escapeHtml(property['Floor Number']) || 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-building"></i> Tower
+                    </span>
+                    <span class="info-value">${escapeHtml(property.Tower) || 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-home"></i> Type
+                    </span>
+                    <span class="info-value">${escapeHtml(property.Typology) || 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-ruler-combined"></i> Area
+                    </span>
+                    <span class="info-value">${escapeHtml(property['Carpet Area']) || 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-compass"></i> Facing
+                    </span>
+                    <span class="info-value">${escapeHtml(property.Facing) || 'N/A'}</span>
                 </div>
             </div>
-
-            ${buildRow('Payment 1: Booking (40%)','At booking',p1)}
-            ${buildRow('Payment 2: Construction Milestone (10%)','October 2025',p2)}
-            ${buildRow('Payment 3: Construction Milestone (10%)','January 2026',p3)}
-            ${buildRow('Payment 4: Construction Milestone (10%)','May 2026',p4)}
-            ${buildRow('Payment 5: Construction Milestone (10%)','December 2026',p5)}
-            ${buildRow('Payment 6: Construction Milestone (10%)','June 2027',p6)}
-            ${buildRow('Final Payment: Possession (10%)','December 2027',p7)}
-        `;
-    } else {                         /*  TOWER C & D  */
-        /*   70 % booking  + 10 % + 15 %  + 5 % possession  */
-        const p1 = Math.floor(allInclusiveAmount * 0.70);   // 70 % – Booking
-        const p2 = Math.floor(allInclusiveAmount * 0.10);   // 10 % – Oct 2025
-        const p3 = Math.floor(allInclusiveAmount * 0.15);   // 15 % – Jan 2026
-        const p4 = Math.floor(allInclusiveAmount * 0.05);   // 5 %  – May 2026 (Possession)
-
-        timelineHTML = `
-            <div class="timeline-title">🏗️ Construction Linked Plan</div>
-
-            <div class="progress-info">
-                <div class="progress-title">📊 Construction Progress Requirements&nbsp;(Tower C & D)</div>
-                <div class="progress-details">
-                    <div class="progress-item">
-                        <div class="progress-percentage">70%</div>
-                        <div class="progress-label">Booking</div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-percentage">${formatPrice(p1)}</div>
-                        <div class="progress-label">Amount&nbsp;Due</div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-percentage">5%</div>
-                        <div class="progress-label">On&nbsp;Possession</div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-percentage">May 2026</div>
-                        <div class="progress-label">Possession</div>
-                    </div>
-                </div>
+            <div class="card-price">
+                <div class="price-label">All Inclusive Price</div>
+                <div class="price-value">${formatCurrency(property['All Inclusive Amount'])}</div>
             </div>
+        </div>
+    `;
+    
+    return card;
+}
 
-            ${buildRow('Payment 1: Booking (70%)','At booking',p1)}
-            ${buildRow('Payment 2: Construction Milestone (10%)','October 2025',p2)}
-            ${buildRow('Payment 3: Construction Milestone (15%)','January 2026',p3)}
-            ${buildRow('Final Payment: Possession (5%)','May 2026',p4)}
-        `;
+// ============================================
+// PROPERTY MODAL
+// ============================================
+
+function openPropertyModal(property) {
+    const modal = document.getElementById('propertyModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = `Unit ${property['Unit Number']} - Details`;
+    
+    modalBody.innerHTML = `
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Unit Number</div>
+                <div class="detail-value">${escapeHtml(property['Unit Number']) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Floor Number</div>
+                <div class="detail-value">${escapeHtml(property['Floor Number']) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Tower</div>
+                <div class="detail-value">${escapeHtml(property.Tower) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Band</div>
+                <div class="detail-value">${escapeHtml(property.Band) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Facing</div>
+                <div class="detail-value">${escapeHtml(property.Facing) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Carpet Area</div>
+                <div class="detail-value">${escapeHtml(property['Carpet Area']) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Typology</div>
+                <div class="detail-value">${escapeHtml(property.Typology) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Series</div>
+                <div class="detail-value">${escapeHtml(property.Series) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Base Price</div>
+                <div class="detail-value">${formatCurrency(property.Price)}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Stamp Duty</div>
+                <div class="detail-value">${formatCurrency(property['Stamp Duty'])}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">GST</div>
+                <div class="detail-value">${formatCurrency(property.GST)}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Registration</div>
+                <div class="detail-value">${formatCurrency(property.Registration)}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Other Charges</div>
+                <div class="detail-value">${formatCurrency(property['Other Charges'])}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Possession Charges</div>
+                <div class="detail-value">${formatCurrency(property['Possession Charges'])}</div>
+            </div>
+            <div class="detail-item" style="grid-column: 1 / -1;">
+                <div class="detail-label">All Inclusive Amount</div>
+                <div class="detail-value" style="font-size: 24px; color: var(--primary-color);">${formatCurrency(property['All Inclusive Amount'])}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Payment Plan</div>
+                <div class="detail-value">${escapeHtml(property['Payment Plan']) || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Availability</div>
+                <div class="detail-value">${escapeHtml(property.Availability) || 'N/A'}</div>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.add('active');
+}
+
+function closeModal() {
+    const modal = document.getElementById('propertyModal');
+    modal.classList.remove('active');
+}
+
+// ============================================
+// EXPORT TO CSV
+// ============================================
+
+function exportToCSV() {
+    if (filteredData.length === 0) {
+        showToast('No data to export', 'error');
+        return;
+    }
+    
+    try {
+        const headers = [
+            'Unit Number', 'Floor Number', 'Band', 'Facing', 'Carpet Area', 
+            'Typology', 'Price', 'Stamp Duty', 'GST', 'Registration', 
+            'Other Charges', 'Possession Charges', 'All Inclusive Amount', 
+            'Tower', 'Payment Plan', 'Series', 'Availability'
+        ];
+        
+        let csvContent = '\uFEFF';
+        csvContent += headers.join(',') + '\n';
+        
+        filteredData.forEach(item => {
+            const row = headers.map(header => {
+                let value = item[header] || '';
+                if (typeof value === 'string') {
+                    value = value.replace(/"/g, '""');
+                    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                        value = `"${value}"`;
+                    }
+                }
+                return value;
+            });
+            csvContent += row.join(',') + '\n';
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const filename = `MICL_Inventory_${timestamp}.csv`;
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log(`📥 Exported ${filteredData.length} records to ${filename}`);
+        showToast('Data exported successfully', 'success');
+        
+    } catch (error) {
+        console.error('Error exporting CSV:', error);
+        showToast('Failed to export data', 'error');
     }
 }
-/* -------------------------------------------------------- */
 
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
 
+function formatCurrency(value) {
+    if (!value || value === 0 || value === '0') return '-';
+    const numValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.-]+/g, '')) : value;
+    if (isNaN(numValue)) return '-';
+    return '₹ ' + numValue.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+}
+
+function escapeHtml(unsafe) {
+    if (!unsafe) return '';
+    return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function updateLastUpdatedTime() {
+    const now = new Date();
+    const timeString = now.toLocaleString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+    
+    const lastUpdatedEl = document.getElementById('lastUpdated');
+    if (lastUpdatedEl) {
+        lastUpdatedEl.textContent = `Last Updated: ${timeString}`;
+    }
+}
+
+function updateResultsCount() {
+    const resultsCount = document.getElementById('resultsCount');
+    if (resultsCount && inventoryData.length > 0) {
+        resultsCount.textContent = `Showing ${filteredData.length} of ${inventoryData.length} properties`;
+    }
+}
+
+function showEmptyState() {
+    const emptyState = document.getElementById('emptyState');
+    const propertyGrid = document.getElementById('propertyGrid');
+    
+    if (emptyState) emptyState.classList.remove('hidden');
+    if (propertyGrid) propertyGrid.style.display = 'none';
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// ============================================
+// AUTO REFRESH
+// ============================================
+
+function startAutoRefresh() {
+    stopAutoRefresh();
+    console.log(`⏰ Auto-refresh enabled (every ${CONFIG.REFRESH_INTERVAL / 1000}s)`);
+    refreshTimer = setInterval(() => {
+        loadInventoryData(false);
+    }, CONFIG.REFRESH_INTERVAL);
+}
+
+function stopAutoRefresh() {
+    if (refreshTimer) {
+        clearInterval(refreshTimer);
+        refreshTimer = null;
+        console.log('⏰ Auto-refresh disabled');
+    }
+}
+
+// ============================================
+// TOAST NOTIFICATIONS
+// ============================================
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    
+    toast.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// ============================================
+// SERVICE WORKER
+// ============================================
+
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+            .catch(err => console.error('❌ Service Worker registration failed:', err));
+    }
+}
+
+// ============================================
+// EVENT HANDLERS
+// ============================================
+
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden && currentUser) {
+        console.log('👁️ Page visible - refreshing data');
+        loadInventoryData(false);
+    }
+});
+
+window.addEventListener('online', function() {
+    console.log('🌐 Connection restored');
+    showToast('Connection restored', 'success');
+    if (currentUser) loadInventoryData(true);
+});
+
+window.addEventListener('offline', function() {
+    console.log('📡 Connection lost');
+    showToast('You are offline. Using cached data.', 'error');
+});
+
+console.log('✅ MICL Live Inventory Panel - Ready');
