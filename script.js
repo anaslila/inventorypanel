@@ -1,5 +1,5 @@
 // ============================================
-// MICL Live Inventory Panel - FINAL OPTIMIZED VERSION
+// MICL Live Inventory Panel - ACCURATE DATA VERSION
 // ============================================
 
 const CONFIG = {
@@ -71,11 +71,8 @@ function showDashboard() {
         return;
     }
     
-    // FORCE hide login screen
     loginScreen.style.display = 'none';
     loginScreen.classList.remove('active');
-    
-    // FORCE show dashboard screen
     dashboardScreen.style.display = 'block';
     dashboardScreen.classList.add('active');
     
@@ -99,27 +96,22 @@ function setupEventListeners() {
         showToast('Refreshing data...', 'success');
     });
     
-    // Searchable dropdowns
     setupSearchableDropdown('filterTower', 'towerDropdown', 'tower');
     setupSearchableDropdown('filterTypology', 'typologyDropdown', 'typology');
     setupSearchableDropdown('filterFacing', 'facingDropdown', 'facing');
     
-    // Regular filters
     document.getElementById('filterAvailability')?.addEventListener('change', applyFilters);
     document.getElementById('searchUnit')?.addEventListener('input', debounce(applyFilters, 300));
     
-    // Buttons
     document.getElementById('clearFiltersBtn')?.addEventListener('click', clearFilters);
     document.getElementById('resetFiltersBtn')?.addEventListener('click', clearFilters);
     document.getElementById('exportBtn')?.addEventListener('click', exportToCSV);
     document.getElementById('closeModal')?.addEventListener('click', closeModal);
     
-    // Close modal on background click
     document.getElementById('propertyModal')?.addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
     
-    // Close dropdowns on outside click
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.custom-select')) {
             closeAllDropdowns();
@@ -364,7 +356,6 @@ function renderDropdownOptions(dataKey, dropdown, input, customData = null) {
     
     dropdown.innerHTML = '';
     
-    // Add "All" option
     const allOption = document.createElement('div');
     allOption.className = 'select-option';
     allOption.textContent = `All ${dataKey.charAt(0).toUpperCase() + dataKey.slice(1)}s`;
@@ -376,7 +367,6 @@ function renderDropdownOptions(dataKey, dropdown, input, customData = null) {
     });
     dropdown.appendChild(allOption);
     
-    // Add data options
     data.forEach(item => {
         const option = document.createElement('div');
         option.className = 'select-option';
@@ -417,7 +407,7 @@ function populateDropdownData() {
 }
 
 // ============================================
-// FILTERS - OPTIMIZED VERSION
+// FILTERS
 // ============================================
 
 function applyFilters() {
@@ -433,11 +423,9 @@ function applyFilters() {
     const availability = availabilitySelect?.value || '';
     const searchUnit = searchInput?.value.toLowerCase() || '';
     
-    // Show loading effect
     const propertyGrid = document.getElementById('propertyGrid');
     if (propertyGrid) propertyGrid.style.opacity = '0.5';
     
-    // Use setTimeout for smoother UI update
     setTimeout(() => {
         filteredData = inventoryData.filter(item => {
             const matchTower = !tower || String(item.Tower).trim() === tower;
@@ -455,7 +443,6 @@ function applyFilters() {
         renderPropertyCards();
         updateResultsCount();
         
-        // Restore opacity
         if (propertyGrid) propertyGrid.style.opacity = '1';
     }, 10);
 }
@@ -492,7 +479,7 @@ function clearFilters() {
 }
 
 // ============================================
-// STATISTICS
+// STATISTICS - EXACT MATCHING
 // ============================================
 
 function updateStatistics() {
@@ -500,7 +487,7 @@ function updateStatistics() {
     
     const available = filteredData.filter(item => {
         const status = String(item.Availability || '').trim().toLowerCase();
-        return status === 'available' || status === '';
+        return status === 'available';
     }).length;
     
     const sold = filteredData.filter(item => {
@@ -518,7 +505,13 @@ function updateStatistics() {
     setStatValue('soldUnits', sold);
     setStatValue('blockedUnits', blocked);
     
-    console.log(`📊 Stats - Total: ${total}, Available: ${available}, Sold: ${sold}, Blocked: ${blocked}`);
+    console.log(`📊 EXACT Stats from Sheet:`);
+    console.log(`   Total: ${total}, Available: ${available}, Sold: ${sold}, Blocked: ${blocked}`);
+    
+    const counted = available + sold + blocked;
+    if (counted !== total) {
+        console.warn(`⚠️ WARNING: ${total - counted} units have invalid/empty status!`);
+    }
 }
 
 function setStatValue(id, value) {
@@ -527,7 +520,7 @@ function setStatValue(id, value) {
 }
 
 // ============================================
-// PROPERTY CARDS RENDERING - FIXED VERSION
+// PROPERTY CARDS - EXACT DATA FROM SHEET
 // ============================================
 
 function renderPropertyCards() {
@@ -556,22 +549,25 @@ function renderPropertyCards() {
 function createPropertyCard(property) {
     const card = document.createElement('div');
     
-    // Normalize and validate availability status
+    // GET EXACT VALUE FROM SHEET - NO DEFAULTS
     let availability = String(property.Availability || '').trim();
     
-    // Handle empty or null values - default to Available
+    // If empty, show as Unknown to alert you
     if (!availability || availability === '' || availability === 'null' || availability === 'undefined') {
-        availability = 'Available';
+        availability = 'Unknown';
+        console.warn('⚠️ Empty availability for unit:', property['Unit Number']);
     }
     
     const status = availability.toLowerCase();
+    
+    // Exact matching
     const statusClass = status === 'available' ? 'available' :
                        status === 'sold' ? 'sold' : 
                        status === 'blocked' || status === 'block' ? 'blocked' : 
-                       'available'; // Default to available
+                       'blocked'; // Default to blocked for safety
     
-    // Display text with proper capitalization
-    const displayStatus = availability.charAt(0).toUpperCase() + availability.slice(1).toLowerCase();
+    // Display EXACTLY what's in sheet
+    const displayStatus = availability;
     
     card.className = `property-card ${statusClass}`;
     card.onclick = () => openPropertyModal(property);
@@ -627,10 +623,8 @@ function openPropertyModal(property) {
     
     modalTitle.textContent = `Unit ${property['Unit Number']} - Details`;
     
-    // Normalize availability for modal display
     let availability = String(property.Availability || '').trim();
-    if (!availability) availability = 'Available';
-    const displayAvailability = availability.charAt(0).toUpperCase() + availability.slice(1).toLowerCase();
+    if (!availability) availability = 'Unknown';
     
     modalBody.innerHTML = `
         <div class="detail-grid">
@@ -700,7 +694,7 @@ function openPropertyModal(property) {
             </div>
             <div class="detail-item">
                 <div class="detail-label">Availability</div>
-                <div class="detail-value">${escapeHtml(displayAvailability)}</div>
+                <div class="detail-value">${escapeHtml(availability)}</div>
             </div>
         </div>
     `;
@@ -761,7 +755,7 @@ function exportToCSV() {
         link.click();
         document.body.removeChild(link);
         
-        console.log(`📥 Exported ${filteredData.length} records to ${filename}`);
+        console.log(`📥 Exported ${filteredData.length} records`);
         showToast('Data exported successfully', 'success');
         
     } catch (error) {
@@ -845,7 +839,6 @@ function stopAutoRefresh() {
     if (refreshTimer) {
         clearInterval(refreshTimer);
         refreshTimer = null;
-        console.log('⏰ Auto-refresh disabled');
     }
 }
 
@@ -862,4 +855,4 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-console.log('✅ MICL Live Inventory Panel - Optimized and Ready');
+console.log('✅ MICL Live Inventory Panel - ACCURATE DATA MODE');
