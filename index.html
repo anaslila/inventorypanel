@@ -2,11 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MICL Live Inventory Panel</title>
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/W4fwJm7g/image.png">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- App Info -->
+    <title>MICL Live Inventory Panel v1.1</title>
+    <meta name="description" content="Real-time inventory management for MICL residential projects. View, filter, and manage property availability instantly.">
+    <meta name="keywords" content="MICL, inventory, real estate, property management, live tracking">
+    <meta name="author" content="MICL">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MICL Inventory">
+    
+    <!-- Favicon & Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://i.postimg.cc/W4fwJm7g/image.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://i.postimg.cc/W4fwJm7g/image.png">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/W4fwJm7g/image.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,28 +45,20 @@
                 <div class="login-header">
                     <img src="https://newprojectsonline.com/assets/uploads/logos/1669592710-micl-aaradhya-parkwood-Logo-new1.jpg" alt="MICL Logo" class="login-logo">
                     <h1>MICL Live Inventory Panel</h1>
-                    <p>Access your property management dashboard</p>
+                    <p class="version-badge">Version 1.1</p>
                 </div>
-                
                 <form id="loginForm" class="login-form">
-                    <div class="form-group">
-                        <label for="username">
-                            <i class="fas fa-user"></i> Username
-                        </label>
-                        <input type="text" id="username" name="username" required placeholder="Enter your username">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="Enter your username" required autocomplete="username">
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="password">
-                            <i class="fas fa-lock"></i> Password
-                        </label>
-                        <input type="password" id="password" name="password" required placeholder="Enter your password">
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
                     </div>
-                    
-                    <button type="submit" class="btn-login">
+                    <button type="submit" class="login-btn">
                         <i class="fas fa-sign-in-alt"></i> Sign In
                     </button>
-                    
                     <div id="loginError" class="error-message"></div>
                 </form>
             </div>
@@ -47,145 +67,138 @@
 
     <!-- Dashboard Screen -->
     <div id="dashboardScreen" class="screen">
-        <!-- Header -->
-        <header class="main-header">
-            <div class="header-container">
-                <div class="header-left">
-                    <img src="https://newprojectsonline.com/assets/uploads/logos/1669592710-micl-aaradhya-parkwood-Logo-new1.jpg" alt="MICL Logo" class="header-logo">
-                    <div class="header-info">
-                        <h1>MICL Live Inventory</h1>
-                        <p id="lastUpdated">Last Updated: --</p>
-                    </div>
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <img src="https://newprojectsonline.com/assets/uploads/logos/1669592710-micl-aaradhya-parkwood-Logo-new1.jpg" alt="MICL" class="header-logo">
+                <div class="header-info">
+                    <h1>MICL Live Inventory</h1>
+                    <span id="lastUpdated" class="last-updated">Loading...</span>
                 </div>
-                
-                <div class="header-right">
-                    <button id="refreshBtn" class="btn-icon" title="Refresh Data">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                    <div class="user-menu">
-                        <i class="fas fa-user-circle"></i>
-                        <span id="userDisplay">User</span>
-                    </div>
-                    <button id="logoutBtn" class="btn-outline" title="Logout">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
+            </div>
+            <div class="top-bar-right">
+                <button id="refreshBtn" class="header-btn" title="Refresh Data">
+                    <i class="fas fa-sync-alt"></i>
+                    <span class="btn-text">Refresh</span>
+                </button>
+                <div class="user-badge">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="userDisplay">User</span>
                 </div>
+                <button id="logoutBtn" class="header-btn logout-btn" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="btn-text">Logout</span>
+                </button>
             </div>
         </header>
 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Statistics Cards -->
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-building"></i></div>
-                    <div class="stat-details">
-                        <p class="stat-label">Total Units</p>
-                        <h3 class="stat-value" id="totalUnits">0</h3>
+            <section class="stats-section">
+                <div class="stat-card stat-total">
+                    <div class="stat-icon">
+                        <i class="fas fa-th-large"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Units</span>
+                        <span class="stat-value" id="totalUnits">0</span>
                     </div>
                 </div>
-                
                 <div class="stat-card stat-available">
-                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                    <div class="stat-details">
-                        <p class="stat-label">Available</p>
-                        <h3 class="stat-value" id="availableUnits">0</h3>
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Available</span>
+                        <span class="stat-value" id="availableUnits">0</span>
                     </div>
                 </div>
-                
                 <div class="stat-card stat-sold">
-                    <div class="stat-icon"><i class="fas fa-handshake"></i></div>
-                    <div class="stat-details">
-                        <p class="stat-label">Sold</p>
-                        <h3 class="stat-value" id="soldUnits">0</h3>
+                    <div class="stat-icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Sold</span>
+                        <span class="stat-value" id="soldUnits">0</span>
                     </div>
                 </div>
-                
                 <div class="stat-card stat-blocked">
-                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                    <div class="stat-details">
-                        <p class="stat-label">Blocked</p>
-                        <h3 class="stat-value" id="blockedUnits">0</h3>
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Blocked</span>
+                        <span class="stat-value" id="blockedUnits">0</span>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Filters Panel -->
-            <div class="filters-panel">
-                <div class="panel-header">
-                    <h2><i class="fas fa-filter"></i> Filter Properties</h2>
-                    <button id="clearFiltersBtn" class="btn-text">
-                        <i class="fas fa-times"></i> Clear All
-                    </button>
+            <!-- Filter Section -->
+            <section class="filter-section">
+                <div class="filter-header">
+                    <h2><i class="fas fa-filter"></i> Filters</h2>
+                    <div class="filter-actions">
+                        <button id="clearFiltersBtn" class="action-btn">
+                            <i class="fas fa-eraser"></i> Clear Filters
+                        </button>
+                        <button id="exportBtn" class="action-btn primary">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="filters-grid">
-                    <div class="filter-item">
-                        <label for="filterTower"><i class="fas fa-building"></i> Tower</label>
-                        <div class="custom-select">
-                            <input type="text" id="filterTower" placeholder="Select or search tower...">
-                            <div class="select-dropdown" id="towerDropdown"></div>
-                        </div>
+                <div class="filter-grid">
+                    <div class="custom-select">
+                        <label for="filterTower">Tower</label>
+                        <input type="text" id="filterTower" placeholder="All Towers" readonly>
+                        <div id="towerDropdown" class="select-dropdown"></div>
                     </div>
-                    
-                    <div class="filter-item">
-                        <label for="filterTypology"><i class="fas fa-home"></i> Typology</label>
-                        <div class="custom-select">
-                            <input type="text" id="filterTypology" placeholder="Select or search typology...">
-                            <div class="select-dropdown" id="typologyDropdown"></div>
-                        </div>
+                    <div class="custom-select">
+                        <label for="filterTypology">Typology</label>
+                        <input type="text" id="filterTypology" placeholder="All Typologies" readonly>
+                        <div id="typologyDropdown" class="select-dropdown"></div>
                     </div>
-                    
-                    <div class="filter-item">
-                        <label for="filterFacing"><i class="fas fa-compass"></i> Facing</label>
-                        <div class="custom-select">
-                            <input type="text" id="filterFacing" placeholder="Select or search facing...">
-                            <div class="select-dropdown" id="facingDropdown"></div>
-                        </div>
+                    <div class="custom-select">
+                        <label for="filterFacing">Facing</label>
+                        <input type="text" id="filterFacing" placeholder="All Facings" readonly>
+                        <div id="facingDropdown" class="select-dropdown"></div>
                     </div>
-                    
-                    <div class="filter-item">
-                        <label for="filterAvailability"><i class="fas fa-info-circle"></i> Status</label>
-                        <select id="filterAvailability" class="select-input">
+                    <div class="filter-group">
+                        <label for="filterAvailability">Availability</label>
+                        <select id="filterAvailability" class="filter-select">
                             <option value="">All Status</option>
                             <option value="Available">Available</option>
                             <option value="Sold">Sold</option>
                             <option value="Blocked">Blocked</option>
                         </select>
                     </div>
-                    
-                    <div class="filter-item">
-                        <label for="searchUnit"><i class="fas fa-search"></i> Search Unit</label>
-                        <input type="text" id="searchUnit" placeholder="Search by unit number..." class="search-input">
+                    <div class="filter-group search-group">
+                        <label for="searchUnit">Search Unit</label>
+                        <input type="text" id="searchUnit" class="search-input" placeholder="Search by unit number...">
                     </div>
                 </div>
+            </section>
+
+            <!-- Results Info -->
+            <div id="resultsInfo" class="results-info">
+                <span id="resultsCount">Loading properties...</span>
             </div>
 
             <!-- Loading Indicator -->
-            <div id="loadingIndicator" class="loading-overlay hidden">
+            <div id="loadingIndicator" class="loading-indicator hidden">
                 <div class="spinner"></div>
                 <p>Loading inventory data...</p>
             </div>
 
-            <!-- Results Info -->
-            <div id="resultsInfo" class="results-info">
-                <p id="resultsCount">Showing 0 of 0 properties</p>
-                <div class="view-controls">
-                    <button id="exportBtn" class="btn-secondary">
-                        <i class="fas fa-download"></i> Export CSV
-                    </button>
-                </div>
-            </div>
-
-            <!-- Property Cards Grid -->
+            <!-- Property Grid -->
             <div id="propertyGrid" class="property-grid"></div>
 
             <!-- Empty State -->
             <div id="emptyState" class="empty-state hidden">
-                <i class="fas fa-folder-open"></i>
+                <i class="fas fa-search"></i>
                 <h3>No Properties Found</h3>
                 <p>Try adjusting your filters or search criteria</p>
-                <button id="resetFiltersBtn" class="btn-primary">Reset Filters</button>
+                <button id="resetFiltersBtn" class="action-btn">Reset Filters</button>
             </div>
         </main>
     </div>
@@ -195,11 +208,96 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Property Details</h2>
-                <button class="modal-close" id="closeModal">
+                <button id="closeModal" class="modal-close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body" id="modalBody"></div>
+            <div id="modalBody" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Install App Banner (Android) -->
+    <div id="installBanner" class="install-banner hidden">
+        <div class="install-content">
+            <img src="https://i.postimg.cc/W4fwJm7g/image.png" alt="MICL" class="install-icon">
+            <div class="install-text">
+                <strong>Install MICL Inventory App</strong>
+                <p>Get faster access and work offline</p>
+            </div>
+        </div>
+        <div class="install-actions">
+            <button id="installBtn" class="install-yes">Install</button>
+            <button id="dismissInstall" class="install-no">Not Now</button>
+        </div>
+    </div>
+
+    <!-- iOS Install Instructions Modal -->
+    <div id="iosInstallModal" class="modal hidden">
+        <div class="modal-content install-guide">
+            <div class="modal-header">
+                <h2>Install on iOS</h2>
+                <button id="closeIosModal" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="install-steps">
+                    <div class="install-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <p>Tap the <strong>Share</strong> button <i class="fas fa-share-square"></i> at the bottom of Safari</p>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <p>Scroll down and tap <strong>"Add to Home Screen"</strong> <i class="fas fa-plus-square"></i></p>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <p>Tap <strong>"Add"</strong> to confirm and install the app</p>
+                        </div>
+                    </div>
+                </div>
+                <button id="iosGotIt" class="action-btn primary">Got It!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Install Instructions Modal -->
+    <div id="desktopInstallModal" class="modal hidden">
+        <div class="modal-content install-guide">
+            <div class="modal-header">
+                <h2>Install Desktop App</h2>
+                <button id="closeDesktopModal" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="install-steps">
+                    <div class="install-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <p>Click the <strong>Install</strong> icon <i class="fas fa-download"></i> in your browser's address bar</p>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <p>Or click the <strong>menu</strong> (⋮) → <strong>"Install MICL Inventory"</strong></p>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <p>The app will open in its own window and appear in your app list</p>
+                        </div>
+                    </div>
+                </div>
+                <button id="desktopGotIt" class="action-btn primary">Got It!</button>
+            </div>
         </div>
     </div>
 
@@ -208,5 +306,21 @@
 
     <!-- Scripts -->
     <script src="script.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>

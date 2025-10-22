@@ -1,13 +1,16 @@
 // ============================================
-// MICL Live Inventory Panel - SILENT REFRESH VERSION
+// MICL Live Inventory Panel v1.1
+// Fixed Empty Search Bug | PWA Support | Enhanced UX
 // ============================================
 
 const CONFIG = {
     API_URL: 'https://script.google.com/macros/s/AKfycby-gPsGojstSyFN0f5E30Ip7HOfQemIS5l4e2WtfpsdQlsVcBNbNcFIIy06-Tq62MVUJQ/exec',
-    REFRESH_INTERVAL: 3000,
+    REFRESH_INTERVAL: 30000,
     STORAGE_KEY: 'miclUser',
     CACHE_KEY: 'miclInventoryCache',
-    CACHE_EXPIRY: 5 * 60 * 1000
+    CACHE_EXPIRY: 5 * 60 * 1000,
+    PWA_DISMISSED_KEY: 'miclPwaDismissed',
+    VERSION: '1.1'
 };
 
 let inventoryData = [];
@@ -17,15 +20,17 @@ let refreshTimer = null;
 let isLoading = false;
 let activeDropdown = null;
 let dropdownData = { tower: [], typology: [], facing: [] };
+let deferredPrompt = null;
 
 // ============================================
 // INITIALIZATION
 // ============================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 MICL Live Inventory Panel - Ready');
+    console.log(`🚀 MICL Live Inventory Panel v${CONFIG.VERSION} - Ready`);
     checkLoginStatus();
     setupEventListeners();
+    setupPWAPrompt();
 });
 
 function checkLoginStatus() {
@@ -75,6 +80,7 @@ function showDashboard() {
     loginScreen.classList.remove('active');
     dashboardScreen.style.display = 'block';
     dashboardScreen.classList.add('active');
+    window.scrollTo(0, 0);
     
     if (userDisplay && currentUser) {
         userDisplay.textContent = currentUser.username;
@@ -108,17 +114,124 @@ function setupEventListeners() {
     document.getElementById('exportBtn')?.addEventListener('click', exportToCSV);
     document.getElementById('closeModal')?.addEventListener('click', closeModal);
     
+    // Close modal on background click
     document.getElementById('propertyModal')?.addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
     
+    // Close dropdowns on outside click
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.custom-select')) {
             closeAllDropdowns();
         }
     });
     
+    // PWA Install event listeners
+    document.getElementById('installBtn')?.addEventListener('click', handlePWAInstall);
+    document.getElementById('dismissInstall')?.addEventListener('click', dismissPWAPrompt);
+    document.getElementById('closeIosModal')?.addEventListener('click', () => {
+        document.getElementById('iosInstallModal')?.classList.remove('active');
+    });
+    document.getElementById('iosGotIt')?.addEventListener('click', () => {
+        document.getElementById('iosInstallModal')?.classList.remove('active');
+        localStorage.setItem(CONFIG.PWA_DISMISSED_KEY, 'true');
+    });
+    document.getElementById('closeDesktopModal')?.addEventListener('click', () => {
+        document.getElementById('desktopInstallModal')?.classList.remove('active');
+    });
+    document.getElementById('desktopGotIt')?.addEventListener('click', () => {
+        document.getElementById('desktopInstallModal')?.classList.remove('active');
+        localStorage.setItem(CONFIG.PWA_DISMISSED_KEY, 'true');
+    });
+    
     console.log('✅ Event listeners attached');
+}
+
+// ============================================
+// PWA INSTALL PROMPT
+// ============================================
+
+function setupPWAPrompt() {
+    // Check if already installed or dismissed
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isDismissed = localStorage.getItem(CONFIG.PWA_DISMISSED_KEY) === 'true';
+    
+    if (isStandalone) {
+        console.log('✅ App already installed');
+        return;
+    }
+    
+    if (isDismissed) {
+        console.log('ℹ️ Install prompt previously dismissed');
+        return;
+    }
+    
+    // Listen for beforeinstallprompt event (Android/Desktop Chrome)
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show install banner for Android
+        if (isAndroid()) {
+            setTimeout(() => {
+                document.getElementById('installBanner')?.classList.remove('hidden');
+            }, 3000); // Show after 3 seconds
+        }
+    });
+    
+    // For iOS Safari
+    if (isIOS() && !isStandalone && !isDismissed) {
+        setTimeout(() => {
+            document.getElementById('iosInstallModal')?.classList.add('active');
+        }, 5000); // Show after 5 seconds
+    }
+    
+    // For Desktop (if not mobile)
+    if (!isMobile() && !isStandalone && !isDismissed) {
+        setTimeout(() => {
+            if (deferredPrompt) {
+                document.getElementById('desktopInstallModal')?.classList.add('active');
+            }
+        }, 8000); // Show after 8 seconds
+    }
+}
+
+async function handlePWAInstall() {
+    if (!deferredPrompt) {
+        console.log('No install prompt available');
+        return;
+    }
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    console.log(`User response to install prompt: ${outcome}`);
+    
+    if (outcome === 'accepted') {
+        showToast('App installed successfully!', 'success');
+        document.getElementById('installBanner')?.classList.add('hidden');
+        localStorage.setItem(CONFIG.PWA_DISMISSED_KEY, 'true');
+    }
+    
+    deferredPrompt = null;
+}
+
+function dismissPWAPrompt() {
+    document.getElementById('installBanner')?.classList.add('hidden');
+    localStorage.setItem(CONFIG.PWA_DISMISSED_KEY, 'true');
+    showToast('You can install later from browser menu', 'success');
+}
+
+function isAndroid() {
+    return /Android/i.test(navigator.userAgent);
+}
+
+function isIOS() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
 // ============================================
@@ -137,12 +250,14 @@ async function handleLogin(e) {
     
     if (!username || !password) {
         errorEl.textContent = 'Please enter both username and password';
+        errorEl.style.display = 'block';
         return;
     }
     
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
     errorEl.textContent = '';
+    errorEl.style.display = 'none';
     
     const url = `${CONFIG.API_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
     
@@ -170,11 +285,13 @@ async function handleLogin(e) {
             showDashboard();
         } else {
             errorEl.textContent = result.message || 'Invalid credentials';
+            errorEl.style.display = 'block';
             console.log('❌ Login failed:', result.message);
         }
     } catch (error) {
         console.error('❌ Login error:', error);
         errorEl.textContent = 'Login failed: ' + error.message;
+        errorEl.style.display = 'block';
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
@@ -192,7 +309,10 @@ function handleLogout() {
         
         document.getElementById('loginForm')?.reset();
         const errorEl = document.getElementById('loginError');
-        if (errorEl) errorEl.textContent = '';
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.style.display = 'none';
+        }
         
         console.log('👋 Logged out successfully');
         showLogin();
@@ -383,7 +503,7 @@ function populateDropdownData() {
 }
 
 // ============================================
-// FILTERS - NO VISUAL DISTURBANCE
+// FILTERS - FIXED EMPTY SEARCH BUG
 // ============================================
 
 function applyFilters() {
@@ -420,7 +540,10 @@ function clearFilters() {
     const towerInput = document.getElementById('filterTower');
     const typologyInput = document.getElementById('filterTypology');
     const facingInput = document.getElementById('filterFacing');
+    const availabilitySelect = document.getElementById('filterAvailability');
+    const searchInput = document.getElementById('searchUnit');
     
+    // Clear all filter inputs
     if (towerInput) {
         towerInput.value = '';
         towerInput.dataset.value = '';
@@ -433,18 +556,25 @@ function clearFilters() {
         facingInput.value = '';
         facingInput.dataset.value = '';
     }
-    
-    const availabilitySelect = document.getElementById('filterAvailability');
-    const searchInput = document.getElementById('searchUnit');
-    
     if (availabilitySelect) availabilitySelect.value = '';
     if (searchInput) searchInput.value = '';
     
+    // FIXED: Reset filteredData to full inventory
     filteredData = [...inventoryData];
+    
+    // FIXED: Force show property grid and hide empty state
+    const propertyGrid = document.getElementById('propertyGrid');
+    const emptyState = document.getElementById('emptyState');
+    if (propertyGrid) propertyGrid.style.display = 'grid';
+    if (emptyState) emptyState.classList.add('hidden');
+    
+    // Update UI
     updateStatistics();
     renderPropertyCards();
     updateResultsCount();
     showToast('Filters cleared', 'success');
+    
+    console.log('✅ Filters cleared, showing all properties');
 }
 
 // ============================================
@@ -477,7 +607,14 @@ function updateStatistics() {
 
 function setStatValue(id, value) {
     const el = document.getElementById(id);
-    if (el) el.textContent = value;
+    if (el) {
+        el.textContent = value;
+        // Add animation
+        el.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+            el.style.transform = 'scale(1)';
+        }, 200);
+    }
 }
 
 // ============================================
@@ -497,7 +634,9 @@ function renderPropertyCards() {
         return;
     }
     
+    // FIXED: Always hide empty state when there are properties
     if (emptyState) emptyState.classList.add('hidden');
+    if (grid) grid.style.display = 'grid';
     
     filteredData.forEach(property => {
         const card = createPropertyCard(property);
@@ -811,4 +950,4 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-console.log('✅ MICL Live Inventory Panel - SILENT REFRESH MODE');
+console.log(`✅ MICL Live Inventory Panel v${CONFIG.VERSION} - Loaded Successfully`);
