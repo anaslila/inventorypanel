@@ -1,6 +1,6 @@
 // ============================================
-// MICL Live Inventory Panel v1.1
-// Fixed Empty Search Bug | PWA Support | Enhanced UX
+// MICL Live Inventory Panel v1.1.15 FIXED
+// Floor-Wise Layout | 5 Cards Per Line | Filter Memory | PWA
 // ============================================
 
 const CONFIG = {
@@ -10,7 +10,8 @@ const CONFIG = {
     CACHE_KEY: 'miclInventoryCache',
     CACHE_EXPIRY: 5 * 60 * 1000,
     PWA_DISMISSED_KEY: 'miclPwaDismissed',
-    VERSION: '1.1'
+    FILTER_STATE_KEY: 'miclFilterState',
+    VERSION: '1.1.15'
 };
 
 let inventoryData = [];
@@ -80,7 +81,6 @@ function showDashboard() {
     loginScreen.classList.remove('active');
     dashboardScreen.style.display = 'block';
     dashboardScreen.classList.add('active');
-    window.scrollTo(0, 0);
     
     if (userDisplay && currentUser) {
         userDisplay.textContent = currentUser.username;
@@ -106,20 +106,25 @@ function setupEventListeners() {
     setupSearchableDropdown('filterTypology', 'typologyDropdown', 'typology');
     setupSearchableDropdown('filterFacing', 'facingDropdown', 'facing');
     
-    document.getElementById('filterAvailability')?.addEventListener('change', applyFilters);
-    document.getElementById('searchUnit')?.addEventListener('input', debounce(applyFilters, 300));
+    document.getElementById('filterAvailability')?.addEventListener('change', () => {
+        applyFilters();
+        saveFilterState();
+    });
+    
+    document.getElementById('searchUnit')?.addEventListener('input', debounce(() => {
+        applyFilters();
+        saveFilterState();
+    }, 300));
     
     document.getElementById('clearFiltersBtn')?.addEventListener('click', clearFilters);
     document.getElementById('resetFiltersBtn')?.addEventListener('click', clearFilters);
     document.getElementById('exportBtn')?.addEventListener('click', exportToCSV);
     document.getElementById('closeModal')?.addEventListener('click', closeModal);
     
-    // Close modal on background click
     document.getElementById('propertyModal')?.addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
     
-    // Close dropdowns on outside click
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.custom-select')) {
             closeAllDropdowns();
@@ -148,11 +153,81 @@ function setupEventListeners() {
 }
 
 // ============================================
+// FILTER STATE (localStorage)
+// ============================================
+
+function saveFilterState() {
+    try {
+        const towerInput = document.getElementById('filterTower');
+        const typologyInput = document.getElementById('filterTypology');
+        const facingInput = document.getElementById('filterFacing');
+        const availabilitySelect = document.getElementById('filterAvailability');
+        const searchInput = document.getElementById('searchUnit');
+        
+        const filterState = {
+            tower: towerInput?.dataset.value || '',
+            typology: typologyInput?.dataset.value || '',
+            facing: facingInput?.dataset.value || '',
+            availability: availabilitySelect?.value || '',
+            searchUnit: searchInput?.value || ''
+        };
+        localStorage.setItem(CONFIG.FILTER_STATE_KEY, JSON.stringify(filterState));
+    } catch (error) {
+        console.error('Error saving filter state:', error);
+    }
+}
+
+function restoreFilterState() {
+    try {
+        const savedState = localStorage.getItem(CONFIG.FILTER_STATE_KEY);
+        if (!savedState) return;
+        
+        const filterState = JSON.parse(savedState);
+        
+        if (filterState.tower) {
+            const towerInput = document.getElementById('filterTower');
+            if (towerInput) {
+                towerInput.value = filterState.tower;
+                towerInput.dataset.value = filterState.tower;
+            }
+        }
+        
+        if (filterState.typology) {
+            const typologyInput = document.getElementById('filterTypology');
+            if (typologyInput) {
+                typologyInput.value = filterState.typology;
+                typologyInput.dataset.value = filterState.typology;
+            }
+        }
+        
+        if (filterState.facing) {
+            const facingInput = document.getElementById('filterFacing');
+            if (facingInput) {
+                facingInput.value = filterState.facing;
+                facingInput.dataset.value = filterState.facing;
+            }
+        }
+        
+        if (filterState.availability) {
+            const availabilitySelect = document.getElementById('filterAvailability');
+            if (availabilitySelect) availabilitySelect.value = filterState.availability;
+        }
+        
+        if (filterState.searchUnit) {
+            const searchInput = document.getElementById('searchUnit');
+            if (searchInput) searchInput.value = filterState.searchUnit;
+        }
+        
+    } catch (error) {
+        console.error('Error restoring filter state:', error);
+    }
+}
+
+// ============================================
 // PWA INSTALL PROMPT
 // ============================================
 
 function setupPWAPrompt() {
-    // Check if already installed or dismissed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     const isDismissed = localStorage.getItem(CONFIG.PWA_DISMISSED_KEY) === 'true';
     
@@ -166,33 +241,29 @@ function setupPWAPrompt() {
         return;
     }
     
-    // Listen for beforeinstallprompt event (Android/Desktop Chrome)
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         
-        // Show install banner for Android
         if (isAndroid()) {
             setTimeout(() => {
                 document.getElementById('installBanner')?.classList.remove('hidden');
-            }, 3000); // Show after 3 seconds
+            }, 3000);
         }
     });
     
-    // For iOS Safari
     if (isIOS() && !isStandalone && !isDismissed) {
         setTimeout(() => {
             document.getElementById('iosInstallModal')?.classList.add('active');
-        }, 5000); // Show after 5 seconds
+        }, 5000);
     }
     
-    // For Desktop (if not mobile)
     if (!isMobile() && !isStandalone && !isDismissed) {
         setTimeout(() => {
             if (deferredPrompt) {
                 document.getElementById('desktopInstallModal')?.classList.add('active');
             }
-        }, 8000); // Show after 8 seconds
+        }, 8000);
     }
 }
 
@@ -246,8 +317,6 @@ async function handleLogin(e) {
     const errorEl = document.getElementById('loginError');
     const submitBtn = e.target.querySelector('button[type="submit"]');
     
-    console.log('🔐 Login attempt:', username);
-    
     if (!username || !password) {
         errorEl.textContent = 'Please enter both username and password';
         errorEl.style.display = 'block';
@@ -262,16 +331,13 @@ async function handleLogin(e) {
     const url = `${CONFIG.API_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
     
     try {
-        console.log('📡 Sending login request...');
         const response = await fetch(url);
-        console.log('📥 Response status:', response.status);
         
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
         
         const result = await response.json();
-        console.log('📦 Login result:', result);
         
         if (result.success) {
             currentUser = {
@@ -281,12 +347,10 @@ async function handleLogin(e) {
             };
             
             localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(currentUser));
-            console.log('✅ Login successful');
             showDashboard();
         } else {
             errorEl.textContent = result.message || 'Invalid credentials';
             errorEl.style.display = 'block';
-            console.log('❌ Login failed:', result.message);
         }
     } catch (error) {
         console.error('❌ Login error:', error);
@@ -302,6 +366,7 @@ function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
         localStorage.removeItem(CONFIG.STORAGE_KEY);
         localStorage.removeItem(CONFIG.CACHE_KEY);
+        localStorage.removeItem(CONFIG.FILTER_STATE_KEY);
         currentUser = null;
         stopAutoRefresh();
         inventoryData = [];
@@ -314,39 +379,48 @@ function handleLogout() {
             errorEl.style.display = 'none';
         }
         
-        console.log('👋 Logged out successfully');
         showLogin();
         showToast('Logged out successfully', 'success');
     }
 }
 
 // ============================================
-// DATA LOADING - SILENT BACKGROUND REFRESH
+// DATA LOADING
 // ============================================
 
 async function loadInventoryData(forceRefresh = false) {
-    if (isLoading) {
-        console.log('⏳ Already loading data...');
-        return;
-    }
+    if (isLoading) return;
+    
+    const loadingEl = document.getElementById('loadingIndicator');
+    const propertyGrid = document.getElementById('propertyGrid');
+    const emptyState = document.getElementById('emptyState');
+    const resultsInfo = document.getElementById('resultsInfo');
     
     isLoading = true;
-    console.log('📊 Loading inventory data silently...');
+    
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    if (propertyGrid) propertyGrid.style.display = 'none';
+    if (emptyState) {
+        emptyState.classList.add('hidden');
+        emptyState.style.display = 'none';
+    }
+    if (resultsInfo) resultsInfo.style.display = 'none';
     
     try {
         if (!forceRefresh) {
             const cachedData = getCachedData();
             if (cachedData) {
-                console.log('📦 Using cached data');
                 inventoryData = cachedData;
-                populateDropdownData();
-                applyFilters();
+                filteredData = [...inventoryData];
+                processData();
+                if (loadingEl) loadingEl.classList.add('hidden');
+                if (propertyGrid) propertyGrid.style.display = 'flex';
+                if (resultsInfo) resultsInfo.style.display = 'flex';
                 isLoading = false;
                 return;
             }
         }
         
-        console.log('🌐 Fetching from server...');
         const response = await fetch(`${CONFIG.API_URL}?action=getData&t=${Date.now()}`);
         
         if (!response.ok) {
@@ -354,17 +428,14 @@ async function loadInventoryData(forceRefresh = false) {
         }
         
         const data = await response.json();
-        console.log('📦 Received data:', data.length, 'properties');
         
         if (Array.isArray(data) && data.length > 0) {
             inventoryData = data;
+            filteredData = [...inventoryData];
             cacheData(inventoryData);
-            populateDropdownData();
-            applyFilters();
-            console.log(`✅ Loaded ${inventoryData.length} properties`);
+            processData();
             if (forceRefresh) showToast('Data refreshed successfully', 'success');
         } else {
-            console.warn('⚠️ No data received');
             inventoryData = [];
             filteredData = [];
             showEmptyState();
@@ -372,22 +443,30 @@ async function loadInventoryData(forceRefresh = false) {
         
     } catch (error) {
         console.error('❌ Error loading data:', error);
-        if (forceRefresh) showToast('Failed to load data. Using cached version.', 'error');
+        if (forceRefresh) showToast('Failed to load data', 'error');
         
         const cachedData = getCachedData();
         if (cachedData) {
-            console.log('📦 Using cached data as fallback');
             inventoryData = cachedData;
-            populateDropdownData();
-            applyFilters();
+            filteredData = [...inventoryData];
+            processData();
         } else {
             showEmptyState();
         }
     } finally {
+        if (loadingEl) loadingEl.classList.add('hidden');
+        if (propertyGrid) propertyGrid.style.display = 'flex';
+        if (resultsInfo) resultsInfo.style.display = 'flex';
         isLoading = false;
         updateLastUpdatedTime();
         startAutoRefresh();
     }
+}
+
+function processData() {
+    populateDropdownData();
+    restoreFilterState();
+    applyFilters();
 }
 
 function cacheData(data) {
@@ -460,6 +539,7 @@ function renderDropdownOptions(dataKey, dropdown, input, customData = null) {
         input.dataset.value = '';
         closeAllDropdowns();
         applyFilters();
+        saveFilterState();
     });
     dropdown.appendChild(allOption);
     
@@ -477,6 +557,7 @@ function renderDropdownOptions(dataKey, dropdown, input, customData = null) {
             input.dataset.value = item;
             closeAllDropdowns();
             applyFilters();
+            saveFilterState();
         });
         
         dropdown.appendChild(option);
@@ -494,16 +575,10 @@ function populateDropdownData() {
     dropdownData.tower = [...new Set(inventoryData.map(item => item.Tower).filter(Boolean))].sort();
     dropdownData.typology = [...new Set(inventoryData.map(item => item.Typology).filter(Boolean))].sort();
     dropdownData.facing = [...new Set(inventoryData.map(item => item.Facing).filter(Boolean))].sort();
-    
-    console.log('📋 Dropdown data populated:', {
-        towers: dropdownData.tower.length,
-        typologies: dropdownData.typology.length,
-        facings: dropdownData.facing.length
-    });
 }
 
 // ============================================
-// FILTERS - FIXED EMPTY SEARCH BUG
+// FILTERS - FIXED BUG
 // ============================================
 
 function applyFilters() {
@@ -519,6 +594,8 @@ function applyFilters() {
     const availability = availabilitySelect?.value || '';
     const searchUnit = searchInput?.value.toLowerCase() || '';
     
+    console.log('🔍 Applying filters:', { tower, typology, facing, availability, searchUnit });
+    
     filteredData = inventoryData.filter(item => {
         const matchTower = !tower || String(item.Tower).trim() === tower;
         const matchTypology = !typology || String(item.Typology).trim() === typology;
@@ -529,7 +606,7 @@ function applyFilters() {
         return matchTower && matchTypology && matchFacing && matchAvailability && matchSearch;
     });
     
-    console.log(`🔍 Filtered: ${filteredData.length} of ${inventoryData.length} properties`);
+    console.log(`✅ Filtered: ${filteredData.length} of ${inventoryData.length} properties`);
     
     updateStatistics();
     renderPropertyCards();
@@ -543,7 +620,6 @@ function clearFilters() {
     const availabilitySelect = document.getElementById('filterAvailability');
     const searchInput = document.getElementById('searchUnit');
     
-    // Clear all filter inputs
     if (towerInput) {
         towerInput.value = '';
         towerInput.dataset.value = '';
@@ -559,22 +635,28 @@ function clearFilters() {
     if (availabilitySelect) availabilitySelect.value = '';
     if (searchInput) searchInput.value = '';
     
-    // FIXED: Reset filteredData to full inventory
+    // IMPORTANT: Reset filtered data to ALL inventory
     filteredData = [...inventoryData];
     
-    // FIXED: Force show property grid and hide empty state
-    const propertyGrid = document.getElementById('propertyGrid');
+    // Hide empty state, show grid
     const emptyState = document.getElementById('emptyState');
-    if (propertyGrid) propertyGrid.style.display = 'grid';
-    if (emptyState) emptyState.classList.add('hidden');
+    const propertyGrid = document.getElementById('propertyGrid');
     
-    // Update UI
+    if (emptyState) {
+        emptyState.classList.add('hidden');
+        emptyState.style.display = 'none';
+    }
+    if (propertyGrid) {
+        propertyGrid.style.display = 'flex';
+    }
+    
     updateStatistics();
     renderPropertyCards();
     updateResultsCount();
+    saveFilterState();
     showToast('Filters cleared', 'success');
     
-    console.log('✅ Filters cleared, showing all properties');
+    console.log(`✅ Filters cleared, showing all ${inventoryData.length} properties`);
 }
 
 // ============================================
@@ -607,18 +689,11 @@ function updateStatistics() {
 
 function setStatValue(id, value) {
     const el = document.getElementById(id);
-    if (el) {
-        el.textContent = value;
-        // Add animation
-        el.style.transform = 'scale(1.1)';
-        setTimeout(() => {
-            el.style.transform = 'scale(1)';
-        }, 200);
-    }
+    if (el) el.textContent = value;
 }
 
 // ============================================
-// PROPERTY CARDS
+// PROPERTY CARDS - FLOOR-WISE (FIXED)
 // ============================================
 
 function renderPropertyCards() {
@@ -629,21 +704,99 @@ function renderPropertyCards() {
     
     grid.innerHTML = '';
     
+    // Hide empty state FIRST
+    if (emptyState) {
+        emptyState.classList.add('hidden');
+        emptyState.style.display = 'none';
+    }
+    
+    // Show grid
+    grid.style.display = 'flex';
+    
     if (filteredData.length === 0) {
         showEmptyState();
         return;
     }
     
-    // FIXED: Always hide empty state when there are properties
-    if (emptyState) emptyState.classList.add('hidden');
-    if (grid) grid.style.display = 'grid';
+    // Group by TOWER first, then by FLOOR
+    const towerGroups = {};
     
     filteredData.forEach(property => {
-        const card = createPropertyCard(property);
-        grid.appendChild(card);
+        const tower = property.Tower || 'Unknown';
+        const floor = property['Floor Number'] || 'Unknown';
+        
+        if (!towerGroups[tower]) {
+            towerGroups[tower] = {};
+        }
+        if (!towerGroups[tower][floor]) {
+            towerGroups[tower][floor] = [];
+        }
+        towerGroups[tower][floor].push(property);
     });
     
-    console.log(`🎴 Rendered ${filteredData.length} property cards`);
+    // Sort towers: Tower A, Tower B, Tower C, Tower D
+    const sortedTowers = Object.keys(towerGroups).sort((a, b) => {
+        const order = ['Tower A', 'Tower B', 'Tower C', 'Tower D'];
+        const indexA = order.indexOf(a);
+        const indexB = order.indexOf(b);
+        
+        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+    });
+    
+    // Render each tower
+    sortedTowers.forEach(tower => {
+        const floorGroups = towerGroups[tower];
+        
+        // Sort floors within tower (ascending)
+        const sortedFloors = Object.keys(floorGroups).sort((a, b) => {
+            const floorA = parseInt(a) || 0;
+            const floorB = parseInt(b) || 0;
+            return floorA - floorB;
+        });
+        
+        // Render each floor within this tower
+        sortedFloors.forEach(floor => {
+            const properties = floorGroups[floor];
+            
+            const floorSection = document.createElement('div');
+            floorSection.className = 'floor-section';
+            
+            const floorHeader = document.createElement('div');
+            floorHeader.className = 'floor-header';
+            floorHeader.innerHTML = `
+                <div class="floor-label">
+                    <i class="fas fa-building"></i>
+                    <span>${tower} - Floor ${floor}</span>
+                </div>
+                <div class="floor-stats">
+                    <span class="floor-count">${properties.length} ${properties.length === 1 ? 'Unit' : 'Units'}</span>
+                </div>
+            `;
+            floorSection.appendChild(floorHeader);
+            
+            const floorCards = document.createElement('div');
+            floorCards.className = 'floor-cards';
+            
+            properties.sort((a, b) => {
+                const unitA = String(a['Unit Number'] || '');
+                const unitB = String(b['Unit Number'] || '');
+                return unitA.localeCompare(unitB, undefined, { numeric: true });
+            });
+            
+            properties.forEach(property => {
+                const card = createPropertyCard(property);
+                floorCards.appendChild(card);
+            });
+            
+            floorSection.appendChild(floorCards);
+            grid.appendChild(floorSection);
+        });
+    });
+    
+    console.log(`✅ Rendered ${filteredData.length} cards organized by tower then floor`);
 }
 
 function createPropertyCard(property) {
@@ -675,23 +828,19 @@ function createPropertyCard(property) {
         <div class="card-body">
             <div class="card-info">
                 <div class="info-row">
-                    <span class="info-label"><i class="fas fa-layer-group"></i> Floor</span>
-                    <span class="info-value">${escapeHtml(property['Floor Number']) || 'N/A'}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label"><i class="fas fa-building"></i> Tower</span>
+                    <span class="info-label"><i class="fas fa-building"></i>Tower</span>
                     <span class="info-value">${escapeHtml(property.Tower) || 'N/A'}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label"><i class="fas fa-home"></i> Type</span>
+                    <span class="info-label"><i class="fas fa-home"></i>Type</span>
                     <span class="info-value">${escapeHtml(property.Typology) || 'N/A'}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label"><i class="fas fa-ruler-combined"></i> Area</span>
+                    <span class="info-label"><i class="fas fa-ruler-combined"></i>Area</span>
                     <span class="info-value">${escapeHtml(property['Carpet Area']) || 'N/A'}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label"><i class="fas fa-compass"></i> Facing</span>
+                    <span class="info-label"><i class="fas fa-compass"></i>Facing</span>
                     <span class="info-value">${escapeHtml(property.Facing) || 'N/A'}</span>
                 </div>
             </div>
@@ -703,6 +852,26 @@ function createPropertyCard(property) {
     `;
     
     return card;
+}
+
+// ============================================
+// EMPTY STATE - FIXED
+// ============================================
+
+function showEmptyState() {
+    const emptyState = document.getElementById('emptyState');
+    const propertyGrid = document.getElementById('propertyGrid');
+    
+    if (emptyState) {
+        emptyState.classList.remove('hidden');
+        emptyState.style.display = 'block';
+    }
+    if (propertyGrid) {
+        propertyGrid.style.display = 'none';
+        propertyGrid.innerHTML = '';
+    }
+    
+    console.log('📭 Showing empty state');
 }
 
 // ============================================
@@ -850,7 +1019,6 @@ function exportToCSV() {
         link.click();
         document.body.removeChild(link);
         
-        console.log(`📥 Exported ${filteredData.length} records`);
         showToast('Data exported successfully', 'success');
         
     } catch (error) {
@@ -901,14 +1069,6 @@ function updateResultsCount() {
     }
 }
 
-function showEmptyState() {
-    const emptyState = document.getElementById('emptyState');
-    const propertyGrid = document.getElementById('propertyGrid');
-    
-    if (emptyState) emptyState.classList.remove('hidden');
-    if (propertyGrid) propertyGrid.style.display = 'none';
-}
-
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -923,9 +1083,7 @@ function debounce(func, wait) {
 
 function startAutoRefresh() {
     stopAutoRefresh();
-    console.log(`⏰ Silent auto-refresh enabled (every ${CONFIG.REFRESH_INTERVAL / 1000}s)`);
     refreshTimer = setInterval(() => {
-        console.log('⏰ Auto-refreshing data silently...');
         loadInventoryData(false);
     }, CONFIG.REFRESH_INTERVAL);
 }
@@ -950,4 +1108,4 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-console.log(`✅ MICL Live Inventory Panel v${CONFIG.VERSION} - Loaded Successfully`);
+console.log(`✅ MICL Live Inventory Panel v${CONFIG.VERSION} - Loaded & Fixed`);

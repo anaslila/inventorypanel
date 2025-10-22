@@ -1,9 +1,8 @@
 /* ============================================
-   MICL Live Inventory Panel v1.1 ULTRA INTERACTIVE
-   Maximum Interactivity | Dynamic Status Design | Mobile First
+   MICL Live Inventory Panel v1.1.15 COMPLETE
+   Floor-Wise Layout | 5 Cards Per Line | Interactive Design
    ============================================ */
 
-/* CSS Variables */
 :root {
     --primary-color: #667eea;
     --primary-dark: #5568d3;
@@ -41,7 +40,6 @@
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     
     --radius-sm: 6px;
     --radius-md: 8px;
@@ -53,7 +51,6 @@
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* Reset & Base */
 * {
     margin: 0;
     padding: 0;
@@ -76,7 +73,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Screen Management */
 .screen {
     display: none;
 }
@@ -89,10 +85,7 @@ body {
     display: none !important;
 }
 
-/* ============================================
-   LOGIN SCREEN
-   ============================================ */
-
+/* LOGIN SCREEN */
 #loginScreen {
     min-height: 100vh;
     display: flex;
@@ -116,14 +109,8 @@ body {
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .login-header {
@@ -216,10 +203,6 @@ body {
     box-shadow: var(--shadow-lg);
 }
 
-.login-btn:active {
-    transform: translateY(0);
-}
-
 .error-message {
     padding: 12px;
     background: var(--danger-light);
@@ -232,10 +215,7 @@ body {
     display: none;
 }
 
-/* ============================================
-   TOP BAR
-   ============================================ */
-
+/* TOP BAR */
 .top-bar {
     background: var(--bg-primary);
     border-bottom: 1px solid var(--border-color);
@@ -299,7 +279,6 @@ body {
 .header-btn:hover {
     background: var(--bg-tertiary);
     border-color: var(--border-dark);
-    color: var(--text-primary);
 }
 
 .logout-btn:hover {
@@ -325,17 +304,14 @@ body {
     color: var(--primary-color);
 }
 
-/* ============================================
-   MAIN CONTENT
-   ============================================ */
-
+/* MAIN CONTENT */
 .main-content {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 24px;
 }
 
-/* Statistics Cards */
+/* STATISTICS */
 .stats-section {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -413,10 +389,9 @@ body {
     font-weight: 800;
     color: var(--text-primary);
     line-height: 1;
-    transition: var(--transition-fast);
 }
 
-/* Filter Section */
+/* FILTERS */
 .filter-section {
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
@@ -523,7 +498,6 @@ body {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* Custom Select Dropdown */
 .custom-select {
     position: relative;
 }
@@ -550,14 +524,8 @@ body {
 }
 
 @keyframes dropdownSlide {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .select-option {
@@ -578,7 +546,6 @@ body {
     font-weight: 600;
 }
 
-/* Results Info */
 .results-info {
     padding: 12px 0;
     margin-bottom: 20px;
@@ -590,7 +557,6 @@ body {
     color: var(--text-tertiary);
 }
 
-/* Loading Indicator */
 .loading-indicator {
     text-align: center;
     padding: 60px 20px;
@@ -607,9 +573,7 @@ body {
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
 .loading-indicator p {
@@ -617,40 +581,98 @@ body {
     font-weight: 600;
     color: var(--text-tertiary);
 }
-
-/* ============================================
-   PROPERTY CARDS - ULTRA INTERACTIVE DESIGN
-   ============================================ */
-
+/* FLOOR-WISE PROPERTY GRID - 5 CARDS PER LINE */
 .property-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
     animation: fadeIn 0.5s ease-out;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
+.floor-section {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-fast);
+}
+
+.floor-section:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.floor-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--primary-dark);
+}
+
+.floor-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+}
+
+.floor-label i {
+    font-size: 20px;
+}
+
+.floor-label span {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.floor-stats {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.floor-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+}
+
+/* FLOOR CARDS - 5 PER LINE */
+.floor-cards {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    padding: 20px;
+    background: var(--bg-secondary);
+}
+
+/* PROPERTY CARDS */
 .property-card {
     background: var(--bg-primary);
     border: 3px solid transparent;
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-lg);
     overflow: hidden;
     cursor: pointer;
     transition: var(--transition-bounce);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);
     position: relative;
-    transform-style: preserve-3d;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Animated gradient border effect */
 .property-card::before {
     content: '';
     position: absolute;
@@ -658,25 +680,24 @@ body {
     left: -3px;
     right: -3px;
     bottom: -3px;
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-lg);
     z-index: -1;
     opacity: 0;
     transition: opacity 0.4s ease;
 }
 
-/* Pulsing glow effect */
 .property-card::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 6px;
+    height: 4px;
     z-index: 1;
     transition: all 0.3s ease;
 }
 
-/* ========== AVAILABLE CARDS - Green Interactive ========== */
+/* AVAILABLE CARDS */
 .property-card.available {
     border-color: var(--success-border);
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.02) 0%, var(--bg-primary) 30%);
@@ -694,8 +715,8 @@ body {
 
 .property-card.available:hover {
     border-color: var(--success-color);
-    box-shadow: 0 15px 35px var(--success-glow), 0 0 25px var(--success-glow);
-    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 12px 28px var(--success-glow);
+    transform: translateY(-6px) scale(1.02);
 }
 
 .property-card.available:hover::before {
@@ -703,16 +724,15 @@ body {
 }
 
 .property-card.available:hover::after {
-    height: 8px;
-    box-shadow: 0 0 20px var(--success-glow);
+    height: 5px;
+    box-shadow: 0 0 15px var(--success-glow);
 }
 
-/* ========== SOLD CARDS - Red Interactive (Muted) ========== */
+/* SOLD CARDS */
 .property-card.sold {
     border-color: var(--danger-border);
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.02) 0%, var(--bg-primary) 30%);
     opacity: 0.88;
-    position: relative;
 }
 
 .property-card.sold::before {
@@ -724,26 +744,25 @@ body {
     background-size: 200% 100%;
 }
 
-/* Diagonal "SOLD" watermark */
 .property-card.sold .card-body::before {
     content: 'SOLD';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-15deg);
-    font-size: 72px;
+    font-size: 48px;
     font-weight: 900;
     color: var(--danger-color);
-    opacity: 0.08;
+    opacity: 0.06;
     pointer-events: none;
-    letter-spacing: 8px;
+    letter-spacing: 6px;
     z-index: 0;
 }
 
 .property-card.sold:hover {
     border-color: var(--danger-color);
-    box-shadow: 0 12px 30px var(--danger-glow);
-    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 10px 24px var(--danger-glow);
+    transform: translateY(-4px) scale(1.01);
     opacity: 1;
 }
 
@@ -756,7 +775,7 @@ body {
     opacity: 0.9;
 }
 
-/* ========== BLOCKED CARDS - Orange Interactive ========== */
+/* BLOCKED CARDS */
 .property-card.blocked {
     border-color: var(--warning-border);
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.02) 0%, var(--bg-primary) 30%);
@@ -774,8 +793,8 @@ body {
 
 .property-card.blocked:hover {
     border-color: var(--warning-color);
-    box-shadow: 0 15px 35px var(--warning-glow), 0 0 25px var(--warning-glow);
-    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 12px 28px var(--warning-glow);
+    transform: translateY(-6px) scale(1.02);
 }
 
 .property-card.blocked:hover::before {
@@ -783,58 +802,50 @@ body {
 }
 
 .property-card.blocked:hover::after {
-    height: 8px;
-    box-shadow: 0 0 20px var(--warning-glow);
+    height: 5px;
+    box-shadow: 0 0 15px var(--warning-glow);
 }
 
-/* Shimmer animation */
 @keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
 }
 
-/* Active state */
 .property-card:active {
-    transform: translateY(-4px) scale(0.98);
+    transform: translateY(-2px) scale(0.98);
 }
 
-/* ========== CARD HEADER ========== */
+/* CARD HEADER */
 .card-header {
-    padding: 24px;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 2px solid;
     position: relative;
     z-index: 2;
-    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.5), transparent);
 }
 
 .available .card-header {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.06));
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.10), rgba(5, 150, 105, 0.05));
     border-bottom-color: var(--success-border);
 }
 
 .sold .card-header {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(220, 38, 38, 0.06));
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.10), rgba(220, 38, 38, 0.05));
     border-bottom-color: var(--danger-border);
 }
 
 .blocked .card-header {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.06));
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.10), rgba(217, 119, 6, 0.05));
     border-bottom-color: var(--warning-border);
 }
 
 .card-unit {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 900;
     color: var(--text-primary);
-    letter-spacing: -1px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05);
+    letter-spacing: -0.5px;
     transition: var(--transition-fast);
 }
 
@@ -842,21 +853,20 @@ body {
     transform: scale(1.05);
 }
 
-/* ========== STATUS BADGE - Interactive ========== */
+/* STATUS BADGE */
 .card-status {
-    padding: 10px 18px;
-    font-size: 11px;
+    padding: 6px 12px;
+    font-size: 9px;
     font-weight: 900;
     text-transform: uppercase;
-    border-radius: 25px;
-    letter-spacing: 1px;
-    box-shadow: var(--shadow-md);
+    border-radius: 20px;
+    letter-spacing: 0.8px;
+    box-shadow: var(--shadow-sm);
     transition: var(--transition-bounce);
     position: relative;
     overflow: hidden;
 }
 
-/* Badge shimmer effect */
 .card-status::before {
     content: '';
     position: absolute;
@@ -876,65 +886,64 @@ body {
     background: linear-gradient(135deg, var(--success-color), var(--success-border));
     color: white;
     border: 2px solid white;
-    box-shadow: 0 4px 12px var(--success-glow);
+    box-shadow: 0 3px 10px var(--success-glow);
 }
 
 .sold .card-status {
     background: linear-gradient(135deg, var(--danger-color), var(--danger-border));
     color: white;
     border: 2px solid white;
-    box-shadow: 0 4px 12px var(--danger-glow);
+    box-shadow: 0 3px 10px var(--danger-glow);
 }
 
 .blocked .card-status {
     background: linear-gradient(135deg, var(--warning-color), var(--warning-border));
     color: white;
     border: 2px solid white;
-    box-shadow: 0 4px 12px var(--warning-glow);
+    box-shadow: 0 3px 10px var(--warning-glow);
     animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-    0%, 100% {
-        box-shadow: 0 4px 12px var(--warning-glow);
-    }
-    50% {
-        box-shadow: 0 6px 20px var(--warning-glow);
-    }
+    0%, 100% { box-shadow: 0 3px 10px var(--warning-glow); }
+    50% { box-shadow: 0 5px 16px var(--warning-glow); }
 }
 
 .property-card:hover .card-status {
-    transform: scale(1.1) rotate(-2deg);
+    transform: scale(1.08);
 }
 
-/* ========== CARD BODY ========== */
+/* CARD BODY */
 .card-body {
-    padding: 24px;
-    transition: opacity 0.3s ease;
+    padding: 14px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     position: relative;
 }
 
 .card-info {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .info-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 8px 10px;
     background: var(--bg-secondary);
-    border-radius: var(--radius-md);
-    border-left: 3px solid transparent;
+    border-radius: var(--radius-sm);
+    border-left: 2px solid transparent;
     transition: var(--transition-fast);
 }
 
 .info-row:hover {
     background: var(--bg-tertiary);
-    transform: translateX(4px);
+    transform: translateX(3px);
 }
 
 .available .info-row {
@@ -950,18 +959,18 @@ body {
 }
 
 .info-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--text-tertiary);
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .info-label i {
-    font-size: 16px;
+    font-size: 12px;
     transition: var(--transition-fast);
 }
 
@@ -978,23 +987,23 @@ body {
 }
 
 .info-row:hover .info-label i {
-    transform: scale(1.2);
+    transform: scale(1.15);
 }
 
 .info-value {
-    font-size: 15px;
+    font-size: 12px;
     font-weight: 800;
     color: var(--text-primary);
 }
 
-/* ========== CARD PRICE - Animated Gradient ========== */
+/* CARD PRICE */
 .card-price {
-    padding: 20px;
-    border-radius: var(--radius-lg);
+    padding: 12px;
+    border-radius: var(--radius-md);
     text-align: center;
     position: relative;
     overflow: hidden;
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .available .card-price {
@@ -1012,64 +1021,34 @@ body {
 }
 
 @keyframes gradientShift {
-    0%, 100% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .price-label {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 700;
     color: rgba(255, 255, 255, 0.95);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .price-value {
-    font-size: 26px;
+    font-size: 18px;
     font-weight: 900;
     color: white;
-    letter-spacing: -1px;
-    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     transition: var(--transition-fast);
 }
 
 .property-card:hover .price-value {
     transform: scale(1.05);
-    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-/* Sparkle effect on price hover */
-.card-price::after {
-    content: '✨';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 20px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.property-card:hover .card-price::after {
-    opacity: 0.7;
-    animation: sparkle 1s infinite;
-}
-
-@keyframes sparkle {
-    0%, 100% {
-        transform: scale(1) rotate(0deg);
-    }
-    50% {
-        transform: scale(1.2) rotate(180deg);
-    }
-}
-
-/* Empty State */
+/* EMPTY STATE */
 .empty-state {
     text-align: center;
     padding: 80px 20px;
@@ -1094,10 +1073,7 @@ body {
     margin-bottom: 24px;
 }
 
-/* ============================================
-   MODAL - ENHANCED V1.1
-   ============================================ */
-
+/* MODAL */
 .modal {
     display: none;
     position: fixed;
@@ -1111,7 +1087,6 @@ body {
     align-items: center;
     justify-content: center;
     padding: 20px;
-    animation: fadeIn 0.3s ease-out;
 }
 
 .modal.active {
@@ -1130,14 +1105,8 @@ body {
 }
 
 @keyframes modalSlide {
-    from {
-        opacity: 0;
-        transform: scale(0.9) translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .modal-header {
@@ -1214,10 +1183,7 @@ body {
     color: var(--text-primary);
 }
 
-/* ============================================
-   INSTALL BANNERS - PWA
-   ============================================ */
-
+/* PWA INSTALL BANNER */
 .install-banner {
     position: fixed;
     bottom: 20px;
@@ -1235,14 +1201,8 @@ body {
 }
 
 @keyframes slideUpBanner {
-    from {
-        opacity: 0;
-        transform: translateY(100px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(100px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .install-content {
@@ -1308,7 +1268,6 @@ body {
     background: var(--bg-tertiary);
 }
 
-/* Install Guide Steps */
 .install-guide .modal-body {
     padding: 32px;
 }
@@ -1350,7 +1309,7 @@ body {
     color: var(--primary-color);
 }
 
-/* Toast Notification */
+/* TOAST */
 .toast {
     position: fixed;
     bottom: 30px;
@@ -1382,9 +1341,18 @@ body {
     background: var(--danger-color);
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
+/* RESPONSIVE */
+@media (max-width: 1400px) {
+    .floor-cards {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 1024px) {
+    .floor-cards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
 
 @media (max-width: 768px) {
     .main-content {
@@ -1432,9 +1400,30 @@ body {
         grid-template-columns: 1fr;
     }
     
-    .property-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
+    .floor-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        padding: 16px;
+    }
+    
+    .floor-header {
+        padding: 12px 16px;
+    }
+    
+    .floor-label span {
+        font-size: 16px;
+    }
+    
+    .property-card {
+        min-height: 260px;
+    }
+    
+    .card-unit {
+        font-size: 20px;
+    }
+    
+    .price-value {
+        font-size: 16px;
     }
     
     .detail-grid {
@@ -1473,16 +1462,15 @@ body {
         justify-content: center;
     }
     
-    .card-unit {
-        font-size: 24px;
+    .floor-cards {
+        grid-template-columns: 1fr;
     }
     
-    .price-value {
-        font-size: 22px;
+    .property-card {
+        min-height: auto;
     }
 }
 
-/* Scrollbar Styling */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -1501,10 +1489,13 @@ body {
     background: var(--text-tertiary);
 }
 
-/* Print Styles */
 @media print {
     .top-bar, .filter-section, .install-banner, .toast {
         display: none !important;
+    }
+    
+    .floor-section {
+        break-inside: avoid;
     }
     
     .property-card {
@@ -1512,11 +1503,8 @@ body {
     }
 }
 
-/* Accessibility - Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
